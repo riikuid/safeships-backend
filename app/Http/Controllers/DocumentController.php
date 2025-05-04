@@ -1,5 +1,5 @@
 <?php
-// app/Http/Controllers/DocumentController.php
+
 namespace App\Http\Controllers;
 
 use App\Helpers\FcmHelper;
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Exception;
-
+use Illuminate\Support\Facades\Validator;
 
 /**
  * @OA\Tag(
@@ -24,12 +24,11 @@ use Exception;
  */
 class DocumentController extends Controller
 {
-
     /**
      * @OA\Get(
      *     path="/api/documents/categories",
      *     tags={"Documents"},
-     *     summary="Get list of all categories",
+     *     summary="Get list of all categories with hierarchy",
      *     security={{"sanctum":{}}},
      *     @OA\Response(
      *         response=200,
@@ -37,12 +36,33 @@ class DocumentController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Kategori berhasil diambil"),
      *             @OA\Property(
-     *                 property="categories",
+     *                 property="data",
      *                 type="array",
      *                 @OA\Items(
      *                     type="object",
      *                     @OA\Property(property="id", type="integer", example=1),
-     *                     @OA\Property(property="name", type="string", example="Penggunaan APAR")
+     *                     @OA\Property(property="name", type="string", example="Pembangunan Dan Pemeliharaan Komitmen"),
+     *                     @OA\Property(property="code", type="string", example="1"),
+     *                     @OA\Property(
+     *                         property="children",
+     *                         type="array",
+     *                         @OA\Items(
+     *                             type="object",
+     *                             @OA\Property(property="id", type="integer", example=2),
+     *                             @OA\Property(property="name", type="string", example="Kebijakan K3"),
+     *                             @OA\Property(property="code", type="string", example="1.1"),
+     *                             @OA\Property(
+     *                                 property="children",
+     *                                 type="array",
+     *                                 @OA\Items(
+     *                                     type="object",
+     *                                     @OA\Property(property="id", type="integer", example=3),
+     *                                     @OA\Property(property="name", type="string", example="Sub Kebijakan K3 1"),
+     *                                     @OA\Property(property="code", type="string", example="1.1.1")
+     *                                 )
+     *                             )
+     *                         )
+     *                     )
      *                 )
      *             )
      *         )
@@ -60,11 +80,13 @@ class DocumentController extends Controller
     public function getAllCategories(Request $request)
     {
         try {
-            $categories = Category::get();
+            $categories = Category::with('children.children')
+                ->whereNull('parent_id')
+                ->get();
 
             return response()->json([
                 'message' => 'Kategori berhasil diambil',
-                'categories' => $categories,
+                'data' => $categories,
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -83,7 +105,7 @@ class DocumentController extends Controller
      *     @OA\Parameter(
      *         name="category_id",
      *         in="query",
-     *         description="Filter documents by category ID",
+     *         description="Filter documents by category ID (Level 3)",
      *         required=false,
      *         @OA\Schema(type="integer")
      *     ),
@@ -92,7 +114,23 @@ class DocumentController extends Controller
      *         description="Documents retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Dokumen berhasil diambil"),
-     *             @OA\Property(property="documents", type="array", @OA\Items(type="object"))
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="title", type="string"),
+     *                     @OA\Property(property="status", type="string"),
+     *                     @OA\Property(
+     *                         property="category",
+     *                         type="object",
+     *                         @OA\Property(property="id", type="integer"),
+     *                         @OA\Property(property="name", type="string"),
+     *                         @OA\Property(property="code", type="string")
+     *                     )
+     *                 )
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -109,16 +147,16 @@ class DocumentController extends Controller
     {
         try {
             $user = Auth::user();
-            $query = Document::with(['user', 'category', 'documentApprovals.approver']);
+            $query = Document::with(['user', 'category'])
+                ->where('status', 'approved');
 
-            // Super admin dan manager bisa melihat semua dokumen
-            if (!in_array($user->role, ['super_admin', 'manager'])) {
-                // Role lain hanya bisa melihat dokumen approved
-                $query->where('status', 'approved');
-            }
-
-            // Filter berdasarkan category_id jika ada
             if ($request->has('category_id')) {
+                $category = Category::findOrFail($request->category_id);
+                if ($category->children()->exists()) {
+                    return response()->json([
+                        'message' => 'Kategori harus berada di level terendah (Level 3)',
+                    ], 422);
+                }
                 $query->where('category_id', $request->category_id);
             }
 
@@ -126,8 +164,99 @@ class DocumentController extends Controller
 
             return response()->json([
                 'message' => 'Dokumen berhasil diambil',
-                'documents' => $documents,
+                'data' => $documents,
             ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Kategori tidak ditemukan',
+                'error' => 'Category not found',
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengambil dokumen',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/documents/managerial",
+     *     tags={"Documents"},
+     *     summary="Get list of documents for managerial roles",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="category_id",
+     *         in="query",
+     *         description="Filter documents by category ID (Level 3)",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Documents retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Dokumen berhasil diambil"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="title", type="string"),
+     *                     @OA\Property(property="status", type="string"),
+     *                     @OA\Property(
+     *                         property="category",
+     *                         type="object",
+     *                         @OA\Property(property="id", type="integer"),
+     *                         @OA\Property(property="name", type="string"),
+     *                         @OA\Property(property="code", type="string")
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil dokumen"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function documentsManagerial(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            $query = Document::with(['user', 'category', 'documentApprovals.approver']);
+
+            if (!in_array($user->role, ['super_admin', 'manager'])) {
+                $query->where('status', 'approved');
+            }
+
+            if ($request->has('category_id')) {
+                $category = Category::findOrFail($request->category_id);
+                if ($category->children()->exists()) {
+                    return response()->json([
+                        'message' => 'Kategori harus berada di level terendah (Level 3)',
+                    ], 422);
+                }
+                $query->where('category_id', $request->category_id);
+            }
+
+            $documents = $query->get();
+
+            return response()->json([
+                'message' => 'Dokumen berhasil diambil',
+                'data' => $documents,
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Kategori tidak ditemukan',
+                'error' => 'Category not found',
+            ], 404);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Gagal mengambil dokumen',
@@ -147,7 +276,7 @@ class DocumentController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 @OA\Property(property="category_id", type="integer", example=1),
+     *                 @OA\Property(property="category_id", type="integer", example=3),
      *                 @OA\Property(property="manager_id", type="integer", example=2),
      *                 @OA\Property(property="title", type="string", example="Penggunaan APAR"),
      *                 @OA\Property(property="description", type="string", example="Dokumen pelatihan"),
@@ -160,7 +289,20 @@ class DocumentController extends Controller
      *         description="Document uploaded successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Dokumen berhasil diunggah, menunggu persetujuan"),
-     *             @OA\Property(property="document", type="object")
+     *             @OA\Property(
+     *                 property="document",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="title", type="string"),
+     *                 @OA\Property(property="status", type="string"),
+     *                 @OA\Property(
+     *                     property="category",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="name", type="string"),
+     *                     @OA\Property(property="code", type="string")
+     *                 )
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -184,7 +326,16 @@ class DocumentController extends Controller
     {
         try {
             $request->validate([
-                'category_id' => 'required|exists:categories,id',
+                'category_id' => [
+                    'required',
+                    'exists:categories,id',
+                    function ($attribute, $value, $fail) {
+                        $category = Category::find($value);
+                        if ($category && $category->children()->exists()) {
+                            $fail('Kategori harus berada di level terendah (Level 3).');
+                        }
+                    },
+                ],
                 'manager_id' => 'required|exists:users,id,role,manager',
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
@@ -204,8 +355,6 @@ class DocumentController extends Controller
                 'version' => 1,
             ]);
 
-
-            // Buat entri persetujuan untuk super admin
             $superAdmins = User::where('role', 'super_admin')->get();
             foreach ($superAdmins as $admin) {
                 DocumentApproval::create([
@@ -214,7 +363,6 @@ class DocumentController extends Controller
                     'status' => 'pending',
                 ]);
 
-                // Buat notifikasi untuk super admin
                 Notification::create([
                     'user_id' => $admin->id,
                     'title' => 'Dokumen Baru Menunggu Persetujuan',
@@ -223,7 +371,6 @@ class DocumentController extends Controller
                     'reference_id' => $document->id,
                 ]);
 
-                // TODO: Kirim FCM ke $admin->fcm_token
                 FcmHelper::send(
                     $admin->fcm_token,
                     'Dokumen Baru Menunggu Persetujuan',
@@ -245,7 +392,7 @@ class DocumentController extends Controller
 
             return response()->json([
                 'message' => 'Dokumen berhasil diunggah, menunggu persetujuan',
-                'document' => $document,
+                'data' => $document->load('category'),
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
@@ -258,6 +405,143 @@ class DocumentController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Get level 3 categories and their documents under a level 2 category.
+     *
+     * @OA\Get(
+     *     path="/api/documents/level3",
+     *     operationId="getLevel3CategoriesAndDocuments",
+     *     tags={"Documents"},
+     *     summary="Get level 3 categories and their documents under a specified level 2 category",
+     *     description="Returns a list of level 3 categories under the specified level 2 category, each containing an array of associated documents.",
+     *     @OA\Parameter(
+     *         name="category_id",
+     *         in="query",
+     *         description="ID of the level 2 category",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Berhasil mendapatkan dokumen pada kategori level 2: Kebijakan K3"
+     *             ),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=2),
+     *                     @OA\Property(property="name", type="string", example="Terdapat kebijakan K3 yang tertulis, bertanggal, ditandatangani oleh pengusaha atau pengurus, secara jelas menyatakan tujuan dan sasaran K3 serta komitmen terhadap peningkatan K3."),
+     *                     @OA\Property(property="code", type="string", example="1.1.1"),
+     *                     @OA\Property(
+     *                         property="items",
+     *                         type="array",
+     *                         @OA\Items(
+     *                             type="object",
+     *                             @OA\Property(property="id", type="integer", example=1),
+     *                             @OA\Property(property="title", type="string", example="Dokumen Kebijakan K3 2023"),
+     *                             @OA\Property(property="file_path", type="string", example="storage/documents/kebijakan_k3_2023.pdf"),
+     *                             @OA\Property(property="description", type="string", example="Dokumen resmi kebijakan K3 tahun 2023")
+     *                         )
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request - Category is not a level 2 category",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Kategori yang diberikan bukan kategori level 2")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Validasi gagal"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="category_id",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="The category_id field is required.")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Category not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Kategori tidak ditemukan")
+     *         )
+     *     )
+     * )
+     */
+    public function getLevel3CategoriesAndDocuments(Request $request)
+    {
+        // Validasi input
+        $validator = Validator::make($request->all(), [
+            'category_id' => 'required|exists:categories,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Ambil kategori level 2
+        $category = Category::findOrFail($request->category_id);
+
+        // Pastikan kategori adalah level 2 (memiliki parent_id dan bukan level 3)
+        if (!$category->parent_id || Category::where('parent_id', $category->id)->exists()) {
+            // Ambil semua kategori level 3 di bawah kategori level 2
+            $level3Categories = Category::where('parent_id', $category->id)
+                ->with(['documents' => function ($query) {
+                    $query->select('id', 'title', 'category_id', 'file_path', 'description', 'updated_at'); // Sesuaikan kolom
+                }])
+                ->get()
+                ->map(function ($level3Category) {
+                    return [
+                        'id' => $level3Category->id,
+                        'name' => $level3Category->name,
+                        'code' => $level3Category->code,
+                        'items' => $level3Category->documents->map(function ($document) {
+                            return [
+                                'id' => $document->id,
+                                'title' => $document->title,
+                                'file_path' => $document->file_path,
+                                'description' => $document->description,
+                                'updated_at' => $document->updated_at,
+                            ];
+                        })->toArray(),
+                    ];
+                });
+
+            return response()->json([
+                'message' => 'Berhasil mendapatkan dokumen pada kategori level 2: ' . $category->name,
+                'data' => $level3Categories,
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => 'Kategori yang diberikan bukan kategori level 2',
+        ], 400);
     }
 
     /**
@@ -277,7 +561,20 @@ class DocumentController extends Controller
      *         description="Document retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Dokumen berhasil diambil"),
-     *             @OA\Property(property="document", type="object")
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="title", type="string"),
+     *                 @OA\Property(property="status", type="string"),
+     *                 @OA\Property(
+     *                     property="category",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="name", type="string"),
+     *                     @OA\Property(property="code", type="string")
+     *                 )
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -303,9 +600,6 @@ class DocumentController extends Controller
                 ->findOrFail($id);
 
             $user = Auth::user();
-            // Super_admin dan manager bisa melihat semua dokumen
-            // User atau non_user bisa melihat dokumen mereka sendiri
-            // Role lain hanya bisa melihat dokumen approved
             if (
                 !in_array($user->role, ['super_admin', 'manager']) &&
                 $document->user_id !== $user->id &&
@@ -316,7 +610,7 @@ class DocumentController extends Controller
 
             return response()->json([
                 'message' => 'Dokumen berhasil diambil',
-                'document' => $document,
+                'data' => $document,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -330,7 +624,6 @@ class DocumentController extends Controller
             ], 500);
         }
     }
-
 
     /**
      * @OA\Post(
@@ -377,11 +670,10 @@ class DocumentController extends Controller
     public function approve(Request $request, $id)
     {
         try {
-            $document = Document::findOrFail($id);
+            $document = Document::with(['user', 'category', 'documentApprovals.approver'])->findOrFail($id);
             $uploader = User::find($document->user_id);
             $user = Auth::user();
 
-            // Validasi role dan status dokumen
             if ($user->role === 'super_admin' && $document->status !== 'pending_super_admin') {
                 return response()->json(['message' => 'Dokumen tidak dalam status pending_super_admin'], 400);
             }
@@ -395,13 +687,10 @@ class DocumentController extends Controller
 
             $approval->update(['status' => 'approved']);
 
-
             if ($user->role === 'super_admin') {
-                // Cek apakah kedua super admin sudah menyetujui
                 $superAdminApprovals = DocumentApproval::where('document_id', $id)
                     ->whereIn('approver_id', User::where('role', 'super_admin')->pluck('id'))
                     ->get();
-
 
                 if ($superAdminApprovals->every(fn($a) => $a->status === 'approved')) {
                     $document->update(['status' => 'pending_manager']);
@@ -411,37 +700,35 @@ class DocumentController extends Controller
                         'status' => 'pending',
                     ]);
 
-                    // NOTIF KE MANAJER
                     Notification::create([
                         'user_id' => $document->manager_id,
                         'title' => 'Dokumen Menunggu Persetujuan Anda',
-                        'message' => "Dokumen '{$document->title}' diunggah oleh " . Auth::user()->name . " telah disetujui super admin. Menunggu persetujuan anda sebagai manajer",
+                        'message' => "Dokumen '{$document->title}' telah disetujui super admin. Menunggu persetujuan Anda sebagai manajer.",
                         'reference_type' => 'document',
                         'reference_id' => $document->id,
                     ]);
                     $manager = User::find($document->manager_id);
                     FcmHelper::send(
                         $manager->fcm_token,
-                        'Dokumen Baru Menunggu Persetujuan',
-                        "Dokumen '{$document->title}' diunggah oleh " . Auth::user()->name . " telah disetujui super admin. Menunggu persetujuan anda sebagai manajer",
+                        'Dokumen Menunggu Persetujuan',
+                        "Dokumen '{$document->title}' telah disetujui super admin. Menunggu persetujuan Anda sebagai manajer.",
                         [
                             'reference_type' => 'document',
                             'reference_id' => (string) $document->id,
                         ]
                     );
 
-                    // NOTIF KE USER
                     Notification::create([
                         'user_id' => $document->user_id,
                         'title' => 'Dokumen Disetujui oleh Super Admin',
-                        'message' => "Dokumen '{$document->title}' disetujui super admin. Menunggu persetujuan manajer",
+                        'message' => "Dokumen '{$document->title}' disetujui super admin. Menunggu persetujuan manajer.",
                         'reference_type' => 'document',
                         'reference_id' => $document->id,
                     ]);
                     FcmHelper::send(
                         $uploader->fcm_token,
-                        'Dokumen Baru Menunggu Persetujuan',
-                        "Dokumen '{$document->title}' diunggah oleh " . Auth::user()->name . " telah disetujui super admin. Menunggu persetujuan anda sebagai manajer",
+                        'Dokumen Disetujui oleh Super Admin',
+                        "Dokumen '{$document->title}' disetujui super admin. Menunggu persetujuan manajer.",
                         [
                             'reference_type' => 'document',
                             'reference_id' => (string) $document->id,
@@ -457,7 +744,6 @@ class DocumentController extends Controller
                     'reference_type' => 'document',
                     'reference_id' => $document->id,
                 ]);
-                // TODO: Kirim FCM ke user
                 FcmHelper::send(
                     $uploader->fcm_token,
                     'Dokumen Disetujui',
@@ -469,7 +755,10 @@ class DocumentController extends Controller
                 );
             }
 
-            return response()->json(['message' => 'Dokumen berhasil disetujui']);
+            return response()->json([
+                'message' => 'Dokumen berhasil disetujui',
+                'data' => $document,
+            ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'Dokumen atau persetujuan tidak ditemukan',
@@ -483,7 +772,6 @@ class DocumentController extends Controller
         }
     }
 
-
     /**
      * @OA\Post(
      *     path="/api/documents/{id}/reject",
@@ -492,7 +780,7 @@ class DocumentController extends Controller
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="id",
-     *         in="path",
+         in="path",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
@@ -540,10 +828,10 @@ class DocumentController extends Controller
                 'comments' => 'required|string',
             ]);
 
-            $document = Document::findOrFail($id);
+            $document = Document::with(['user', 'category', 'documentApprovals.approver'])
+                ->findOrFail($id);
             $user = Auth::user();
 
-            // Validasi role dan status dokumen
             if ($user->role === 'super_admin' && $document->status !== 'pending_super_admin') {
                 return response()->json(['message' => 'Dokumen tidak dalam status pending_super_admin'], 400);
             }
@@ -564,7 +852,7 @@ class DocumentController extends Controller
             Notification::create([
                 'user_id' => $document->user_id,
                 'title' => 'Dokumen Ditolak',
-                'message' => "Dokumen '$document->title' ditolak oleh $user->name. Alasan: $request->comments.",
+                'message' => "Dokumen '{$document->title}' ditolak oleh {$user->name}. Alasan: {$request->comments}.",
                 'reference_type' => 'document',
                 'reference_id' => $document->id,
             ]);
@@ -572,14 +860,17 @@ class DocumentController extends Controller
             FcmHelper::send(
                 $uploader->fcm_token,
                 'Dokumen Ditolak',
-                "Dokumen '$document->title' ditolak oleh $user->name. Alasan: $request->comments.",
+                "Dokumen '{$document->title}' ditolak oleh {$user->name}. Alasan: {$request->comments}.",
                 [
                     'reference_type' => 'document',
                     'reference_id' => (string) $document->id,
                 ]
             );
 
-            return response()->json(['message' => 'Dokumen berhasil ditolak']);
+            return response()->json([
+                'message' => 'Dokumen berhasil ditolak',
+                'data' => $document,
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validasi gagal',
@@ -613,7 +904,7 @@ class DocumentController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="comments", type="string", example="Perbarui konten"),
+     *             @OA\Property(property="comments", type="string", example="Perbarui konten")
      *         )
      *     ),
      *     @OA\Response(
@@ -731,7 +1022,13 @@ class DocumentController extends Controller
      *                     @OA\Property(property="id", type="integer", example=1),
      *                     @OA\Property(property="title", type="string", example="Penggunaan APAR"),
      *                     @OA\Property(property="status", type="string", example="pending_super_admin"),
-     *                     @OA\Property(property="category", type="object", @OA\Property(property="id", type="integer"), @OA\Property(property="name", type="string")),
+     *                     @OA\Property(
+     *                         property="category",
+     *                         type="object",
+     *                         @OA\Property(property="id", type="integer"),
+     *                         @OA\Property(property="name", type="string"),
+     *                         @OA\Property(property="code", type="string")
+     *                     ),
      *                     @OA\Property(
      *                         property="document_approvals",
      *                         type="array",
@@ -764,8 +1061,6 @@ class DocumentController extends Controller
             $query = Document::with(['category', 'documentApprovals.approver'])
                 ->where('user_id', $user->id);
 
-            // dd($user);
-            // Filter berdasarkan status jika ada
             if ($request->has('status')) {
                 $query->where('status', $request->status);
             }
@@ -774,7 +1069,7 @@ class DocumentController extends Controller
 
             return response()->json([
                 'message' => 'Pengajuan dokumen berhasil diambil',
-                'submissions' => $submissions,
+                'data' => $submissions,
             ]);
         } catch (Exception $e) {
             return response()->json([

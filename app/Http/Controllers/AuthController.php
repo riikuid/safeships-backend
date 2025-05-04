@@ -68,7 +68,7 @@ class AuthController extends Controller
             'role' => $request->role,
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('auth_token', ['*'], now()->addDays(7))->plainTextToken;
 
         return response()->json([
             'message' => 'Berhasil Registrasi',
@@ -79,10 +79,71 @@ class AuthController extends Controller
 
 
     /**
+     * @OA\Get(
+     *     path="/api/user",
+     *     tags={"Login"},
+     *     summary="Get authenticated user by token",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="User retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Pengguna berhasil diambil"),
+     *             @OA\Property(
+     *                 property="user",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="John Doe"),
+     *                 @OA\Property(property="email", type="string", example="john@example.com"),
+     *                 @OA\Property(property="role", type="string", example="user")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil pengguna"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function getUserByToken(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Unauthenticated',
+                ], 401);
+            }
+
+            return response()->json([
+                'message' => 'Pengguna berhasil diambil',
+                'data' => $user,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengambil pengguna',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * @OA\Post(
      *     path="/api/login",
      *     tags={"Auth"},
-     *     summary="Login a user",
+     *     summary="Login a user with token",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -113,6 +174,7 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
+            'fcm_token' => 'nullable|string', // Add fcm_token as an optional field
         ]);
 
         if (!Auth::attempt($request->only('email', 'password'))) {
@@ -120,7 +182,13 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-        $token = $user->createToken('auth_token')->plainTextToken;
+
+        // Update the user's fcm_token if provided in the request
+        if ($request->has('fcm_token') && $request->fcm_token) {
+            $user->update(['fcm_token' => $request->fcm_token]);
+        }
+
+        $token = $user->createToken('auth_token', ['*'], now()->addDays(7))->plainTextToken;
 
         return response()->json([
             'message' => 'Login Sukses',

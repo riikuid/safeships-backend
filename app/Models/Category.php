@@ -11,11 +11,17 @@ class Category extends Model
 
     use SoftDeletes, HasFactory;
 
-    protected $fillable =
-    [
-        'name',
-        'description',
-    ];
+    protected $fillable = ['name', 'code', 'parent_id'];
+
+    public function parent()
+    {
+        return $this->belongsTo(Category::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Category::class, 'parent_id');
+    }
 
     public function documents()
     {

@@ -1409,6 +1409,214 @@
                 ]
             }
         },
+        "/api/documents/{id}": {
+            "delete": {
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Delete a specific document by ID",
+                "description": "Deletes a document and its associated approvals and notifications. Only super_admin or the document uploader can delete.",
+                "operationId": "deleteDocument",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the document to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Dokumen berhasil dihapus"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Document not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Dokumen tidak ditemukan"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal menghapus dokumen"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/documents/category/{category_id}": {
+            "delete": {
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Delete all documents under a level 3 category",
+                "description": "Deletes all documents under the specified level 3 category, including their associated approvals and notifications. Only super_admin can delete.",
+                "operationId": "deleteDocumentsByCategory",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "path",
+                        "description": "ID of the level 3 category",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 3
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Documents deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Semua dokumen pada kategori berhasil dihapus"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Category is not a level 3 category",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Kategori harus berada di level terendah (Level 3)"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Kategori tidak ditemukan"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal menghapus dokumen"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/notifications": {
             "get": {
                 "tags": [
@@ -1554,7 +1762,7 @@
                                             "type": "string",
                                             "example": "Pengguna berhasil diambil"
                                         },
-                                        "users": {
+                                        "data": {
                                             "type": "array",
                                             "items": {
                                                 "properties": {
@@ -1569,6 +1777,10 @@
                                                     "email": {
                                                         "type": "string",
                                                         "example": "john@example.com"
+                                                    },
+                                                    "password": {
+                                                        "type": "string",
+                                                        "example": "$2y$10$...hashed_password..."
                                                     },
                                                     "role": {
                                                         "type": "string",
@@ -1685,7 +1897,7 @@
                                             "type": "string",
                                             "example": "Pengguna berhasil dibuat"
                                         },
-                                        "user": {
+                                        "data": {
                                             "properties": {
                                                 "id": {
                                                     "type": "integer",
@@ -1698,6 +1910,10 @@
                                                 "email": {
                                                     "type": "string",
                                                     "example": "jane@example.com"
+                                                },
+                                                "password": {
+                                                    "type": "string",
+                                                    "example": "$2y$10$...hashed_password..."
                                                 },
                                                 "role": {
                                                     "type": "string",
@@ -1810,7 +2026,7 @@
                                             "type": "string",
                                             "example": "Pengguna berhasil diambil"
                                         },
-                                        "user": {
+                                        "data": {
                                             "properties": {
                                                 "id": {
                                                     "type": "integer",
@@ -1823,6 +2039,10 @@
                                                 "email": {
                                                     "type": "string",
                                                     "example": "john@example.com"
+                                                },
+                                                "password": {
+                                                    "type": "string",
+                                                    "example": "$2y$10$...hashed_password..."
                                                 },
                                                 "role": {
                                                     "type": "string",
@@ -1965,7 +2185,7 @@
                                             "type": "string",
                                             "example": "Pengguna berhasil diperbarui"
                                         },
-                                        "user": {
+                                        "data": {
                                             "properties": {
                                                 "id": {
                                                     "type": "integer",
@@ -1978,6 +2198,10 @@
                                                 "email": {
                                                     "type": "string",
                                                     "example": "jane@example.com"
+                                                },
+                                                "password": {
+                                                    "type": "string",
+                                                    "example": "$2y$10$...hashed_password..."
                                                 },
                                                 "role": {
                                                     "type": "string",
@@ -2103,6 +2327,39 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Pengguna berhasil dihapus"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "John Doe"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "john@example.com"
+                                                },
+                                                "password": {
+                                                    "type": "string",
+                                                    "example": "$2y$10$...hashed_password..."
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "user"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -2151,6 +2408,94 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Gagal menghapus pengguna"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/managers": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get list of managers",
+                "description": "Retrieve a list of users with the 'manager' role, returning only id, name, and email. Accessible to all authenticated users.",
+                "operationId": "c9d8b8af4d380696e4daccd46ecf9b06",
+                "responses": {
+                    "200": {
+                        "description": "Managers retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Manager berhasil diambil"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "John Doe"
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "example": "john@example.com"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengambil manager"
                                         },
                                         "error": {
                                             "type": "string"

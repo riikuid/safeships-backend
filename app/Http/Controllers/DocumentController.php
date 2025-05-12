@@ -11,6 +11,7 @@ use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Exception;
@@ -248,9 +249,22 @@ class DocumentController extends Controller
 
             $documents = $query->get();
 
+            // Sort documents: unapproved by user at top (asc by created_at), approved by user at bottom (asc by created_at)
+            $sortedDocuments = $documents->sortBy(function ($document) use ($user) {
+                $isApprovedByUser = $document->documentApprovals->contains(function ($approval) use ($user) {
+                    return $approval->approver_id === $user->id && $approval->status !== 'pending';
+                });
+
+                // If approved by user, assign a higher sort key to push it to the bottom
+                $sortKey = $isApprovedByUser ? 1 : 0;
+
+                // Combine sort key with created_at timestamp for secondary sorting
+                return [$sortKey, $document->created_at->timestamp];
+            });
+
             return response()->json([
                 'message' => 'Dokumen berhasil diambil',
-                'data' => $documents,
+                'data' => $sortedDocuments->values(),
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -339,10 +353,17 @@ class DocumentController extends Controller
                 'manager_id' => 'required|exists:users,id,role,manager',
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'file' => 'required|file|mimes:pdf,mp4|max:10240', // Maks 10MB
+                'file' => 'required|file|max:10240', // Maks 10MB
             ]);
 
-            $filePath = $request->file('file')->store('documents', 'public');
+            // Dengan kode berikut:
+            $file = $request->file('file');
+            $extension = $file->getClientOriginalExtension();
+            $timestamp = now()->format('YmdHis'); // Format: tahun-bulan-tanggal-jam-menit-detik
+            $sanitizedTitle = Str::slug($request->title); // Mengubah judul menjadi format URL-friendly
+            $fileName = $timestamp . '_' . $sanitizedTitle . '.' . $extension;
+
+            $filePath = $file->storeAs('documents', $fileName, 'public');
 
             $document = Document::create([
                 'user_id' => Auth::id(),
@@ -513,7 +534,7 @@ class DocumentController extends Controller
             // Ambil semua kategori level 3 di bawah kategori level 2
             $level3Categories = Category::where('parent_id', $category->id)
                 ->with(['documents' => function ($query) {
-                    $query->select('id', 'title', 'category_id', 'file_path', 'description', 'updated_at'); // Sesuaikan kolom
+                    $query->where('status', 'approved')->select('id', 'title', 'category_id', 'file_path', 'description', 'updated_at'); // Sesuaikan kolom
                 }])
                 ->get()
                 ->map(function ($level3Category) {
@@ -755,6 +776,8 @@ class DocumentController extends Controller
                 );
             }
 
+            $document = $document->fresh(['user', 'category', 'documentApprovals.approver']);
+
             return response()->json([
                 'message' => 'Dokumen berhasil disetujui',
                 'data' => $document,
@@ -866,6 +889,8 @@ class DocumentController extends Controller
                     'reference_id' => (string) $document->id,
                 ]
             );
+
+            $document = $document->fresh(['user', 'category', 'documentApprovals.approver']);
 
             return response()->json([
                 'message' => 'Dokumen berhasil ditolak',
@@ -1074,6 +1099,201 @@ class DocumentController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Gagal mengambil pengajuan dokumen',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a specific document by ID.
+     *
+     * @OA\Delete(
+     *     path="/api/documents/{id}",
+     *     operationId="deleteDocument",
+     *     tags={"Documents"},
+     *     summary="Delete a specific document by ID",
+     *     description="Deletes a document and its associated approvals and notifications. Only super_admin or the document uploader can delete.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the document to delete",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Document deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Dokumen berhasil dihapus")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Document not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Dokumen tidak ditemukan")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal menghapus dokumen"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function destroy($id)
+    {
+        try {
+            $document = Document::findOrFail($id);
+            $user = Auth::user();
+
+            // Hanya super_admin atau pengguna yang mengunggah dokumen dapat menghapus
+            if ($user->role !== 'super_admin' && $document->user_id !== $user->id) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            // Hapus file dari penyimpanan
+            if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
+                Storage::disk('public')->delete($document->file_path);
+            }
+
+            // Hapus entri terkait
+            DocumentApproval::where('document_id', $document->id)->delete();
+            Notification::where('reference_type', 'document')
+                ->where('reference_id', $document->id)
+                ->delete();
+
+            // Hapus dokumen
+            $document->delete();
+
+            return response()->json([
+                'message' => 'Dokumen berhasil dihapus',
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Dokumen tidak ditemukan',
+                'error' => 'Document not found',
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Gagal menghapus dokumen',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete all documents under a level 3 category.
+     *
+     * @OA\Delete(
+     *     path="/api/documents/category/{category_id}",
+     *     operationId="deleteDocumentsByCategory",
+     *     tags={"Documents"},
+     *     summary="Delete all documents under a level 3 category",
+     *     description="Deletes all documents under the specified level 3 category, including their associated approvals and notifications. Only super_admin can delete.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="category_id",
+     *         in="path",
+     *         description="ID of the level 3 category",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=3)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Documents deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Semua dokumen pada kategori berhasil dihapus")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Category is not a level 3 category",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Kategori harus berada di level terendah (Level 3)")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Category not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Kategori tidak ditemukan")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal menghapus dokumen"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function destroyByCategory($category_id)
+    {
+        try {
+            $user = Auth::user();
+
+            // Hanya super_admin yang dapat menghapus semua dokumen di kategori
+            if ($user->role !== 'super_admin') {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            // Ambil kategori
+            $category = Category::findOrFail($category_id);
+
+            // Pastikan kategori adalah level 3 (tidak memiliki anak)
+            if ($category->children()->exists()) {
+                return response()->json([
+                    'message' => 'Kategori harus berada di level terendah (Level 3)',
+                ], 400);
+            }
+
+            // Ambil semua dokumen di kategori
+            $documents = Document::where('category_id', $category_id)->get();
+
+            // Hapus file, approvals, dan notifikasi untuk setiap dokumen
+            foreach ($documents as $document) {
+                if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
+                    Storage::disk('public')->delete($document->file_path);
+                }
+                DocumentApproval::where('document_id', $document->id)->delete();
+                Notification::where('reference_type', 'document')
+                    ->where('reference_id', $document->id)
+                    ->delete();
+                $document->delete();
+            }
+
+            return response()->json([
+                'message' => 'Semua dokumen pada kategori berhasil dihapus',
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Kategori tidak ditemukan',
+                'error' => 'Category not found',
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Gagal menghapus dokumen',
                 'error' => $e->getMessage(),
             ], 500);
         }

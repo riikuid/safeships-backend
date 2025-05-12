@@ -36,13 +36,14 @@ class UserController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Pengguna berhasil diambil"),
      *             @OA\Property(
-     *                 property="users",
+     *                 property="data",
      *                 type="array",
      *                 @OA\Items(
      *                     type="object",
      *                     @OA\Property(property="id", type="integer", example=1),
      *                     @OA\Property(property="name", type="string", example="John Doe"),
      *                     @OA\Property(property="email", type="string", example="john@example.com"),
+     *                     @OA\Property(property="password", type="string", example="$2y$10$...hashed_password..."),
      *                     @OA\Property(property="role", type="string", example="user"),
      *                     @OA\Property(property="created_at", type="string", format="date-time"),
      *                     @OA\Property(property="updated_at", type="string", format="date-time")
@@ -70,22 +71,23 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
+            // Aktifkan kembali otorisasi untuk keamanan
             $user = Auth::user();
             if ($user->role !== 'super_admin') {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 
-            $query = User::select('id', 'name', 'email', 'role');
+            $query = User::select('id', 'name', 'email', 'password', 'role', 'created_at', 'updated_at');
 
             if ($request->has('role')) {
                 $query->where('role', $request->role);
             }
 
-            $users = $query->get();
+            $users = $query->get()->makeVisible('password');
 
             return response()->json([
                 'message' => 'Pengguna berhasil diambil',
-                'users' => $users,
+                'data' => $users,
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -113,11 +115,12 @@ class UserController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Pengguna berhasil diambil"),
      *             @OA\Property(
-     *                 property="user",
+     *                 property="data",
      *                 type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
      *                 @OA\Property(property="name", type="string", example="John Doe"),
      *                 @OA\Property(property="email", type="string", example="john@example.com"),
+     *                 @OA\Property(property="password", type="string", example="$2y$10$...hashed_password..."),
      *                 @OA\Property(property="role", type="string", example="user"),
      *                 @OA\Property(property="created_at", type="string", format="date-time"),
      *                 @OA\Property(property="updated_at", type="string", format="date-time")
@@ -156,12 +159,12 @@ class UserController extends Controller
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 
-            $targetUser = User::select('id', 'name', 'email', 'role', 'created_at', 'updated_at')
-                ->findOrFail($id);
+            $targetUser = User::select('id', 'name', 'email', 'password', 'role', 'created_at', 'updated_at')
+                ->findOrFail($id)->makeVisible('password');
 
             return response()->json([
                 'message' => 'Pengguna berhasil diambil',
-                'user' => $targetUser,
+                'data' => $targetUser,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -197,11 +200,12 @@ class UserController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Pengguna berhasil dibuat"),
      *             @OA\Property(
-     *                 property="user",
+     *                 property="data",
      *                 type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
      *                 @OA\Property(property="name", type="string", example="Jane Doe"),
      *                 @OA\Property(property="email", type="string", example="jane@example.com"),
+     *                 @OA\Property(property="password", type="string", example="$2y$10$...hashed_password..."),
      *                 @OA\Property(property="role", type="string", example="user"),
      *                 @OA\Property(property="created_at", type="string", format="date-time"),
      *                 @OA\Property(property="updated_at", type="string", format="date-time")
@@ -257,7 +261,7 @@ class UserController extends Controller
 
             return response()->json([
                 'message' => 'Pengguna berhasil dibuat',
-                'user' => $newUser->only(['id', 'name', 'email', 'role', 'created_at', 'updated_at']),
+                'data' => $newUser->only(['id', 'name', 'email', 'password', 'role', 'created_at', 'updated_at']),
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
@@ -299,11 +303,12 @@ class UserController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Pengguna berhasil diperbarui"),
      *             @OA\Property(
-     *                 property="user",
+     *                 property="data",
      *                 type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
      *                 @OA\Property(property="name", type="string", example="Jane Doe"),
      *                 @OA\Property(property="email", type="string", example="jane@example.com"),
+     *                 @OA\Property(property="password", type="string", example="$2y$10$...hashed_password..."),
      *                 @OA\Property(property="role", type="string", example="manager"),
      *                 @OA\Property(property="created_at", type="string", format="date-time"),
      *                 @OA\Property(property="updated_at", type="string", format="date-time")
@@ -373,7 +378,7 @@ class UserController extends Controller
 
             return response()->json([
                 'message' => 'Pengguna berhasil diperbarui',
-                'user' => $targetUser->only(['id', 'name', 'email', 'role', 'created_at', 'updated_at']),
+                'data' => $targetUser->only(['id', 'name', 'email', 'password', 'role', 'created_at', 'updated_at']),
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -409,7 +414,18 @@ class UserController extends Controller
      *         response=200,
      *         description="User deleted successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Pengguna berhasil dihapus")
+     *             @OA\Property(property="message", type="string", example="Pengguna berhasil dihapus"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="John Doe"),
+     *                 @OA\Property(property="email", type="string", example="john@example.com"),
+     *                 @OA\Property(property="password", type="string", example="$2y$10$...hashed_password..."),
+     *                 @OA\Property(property="role", type="string", example="user"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -448,11 +464,15 @@ class UserController extends Controller
                 return response()->json(['message' => 'Cannot delete self'], 403);
             }
 
-            $targetUser = User::findOrFail($id);
+            $targetUser = User::select('id', 'name', 'email', 'password', 'role', 'created_at', 'updated_at')
+                ->findOrFail($id);
+
+            $deletedUser = $targetUser->only(['id', 'name', 'email', 'password', 'role', 'created_at', 'updated_at']);
             $targetUser->delete();
 
             return response()->json([
                 'message' => 'Pengguna berhasil dihapus',
+                'data' => $deletedUser,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -462,6 +482,66 @@ class UserController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Gagal menghapus pengguna',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/users/managers",
+     *     tags={"Users"},
+     *     summary="Get list of managers",
+     *     description="Retrieve a list of users with the 'manager' role, returning only id, name, and email. Accessible to all authenticated users.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Managers retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Manager berhasil diambil"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="name", type="string", example="John Doe"),
+     *                     @OA\Property(property="email", type="string", example="john@example.com")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil manager"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function getManagers()
+    {
+        try {
+            $managers = User::select('id', 'name', 'email')
+                ->where('role', 'manager')
+                ->get();
+
+            return response()->json([
+                'message' => 'Manager berhasil diambil',
+                'data' => $managers,
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengambil manager',
                 'error' => $e->getMessage(),
             ], 500);
         }

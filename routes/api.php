@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [UserController::class, 'store'])->middleware('role:super_admin');
         Route::put('{id}', [UserController::class, 'update'])->middleware('role:super_admin');
         Route::delete('{id}', [UserController::class, 'destroy'])->middleware('role:super_admin');
+        Route::put('{id}/reset-password', [UserController::class, 'resetPassword']);
     });
     Route::get('notifications', [NotificationController::class, 'index']);
 });

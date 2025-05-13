@@ -1732,7 +1732,7 @@
                 "tags": [
                     "Users"
                 ],
-                "summary": "Get list of all users",
+                "summary": "Get list of all users (excluding non_user unless specified)",
                 "operationId": "c457726701591d1183b53aa71fc13441",
                 "parameters": [
                     {
@@ -1777,10 +1777,6 @@
                                                     "email": {
                                                         "type": "string",
                                                         "example": "john@example.com"
-                                                    },
-                                                    "password": {
-                                                        "type": "string",
-                                                        "example": "$2y$10$...hashed_password..."
                                                     },
                                                     "role": {
                                                         "type": "string",
@@ -1911,10 +1907,6 @@
                                                     "type": "string",
                                                     "example": "jane@example.com"
                                                 },
-                                                "password": {
-                                                    "type": "string",
-                                                    "example": "$2y$10$...hashed_password..."
-                                                },
                                                 "role": {
                                                     "type": "string",
                                                     "example": "user"
@@ -2040,10 +2032,6 @@
                                                     "type": "string",
                                                     "example": "john@example.com"
                                                 },
-                                                "password": {
-                                                    "type": "string",
-                                                    "example": "$2y$10$...hashed_password..."
-                                                },
                                                 "role": {
                                                     "type": "string",
                                                     "example": "user"
@@ -2153,11 +2141,6 @@
                                         "type": "string",
                                         "example": "jane@example.com"
                                     },
-                                    "password": {
-                                        "type": "string",
-                                        "example": "newpassword123",
-                                        "nullable": true
-                                    },
                                     "role": {
                                         "type": "string",
                                         "enum": [
@@ -2198,10 +2181,6 @@
                                                 "email": {
                                                     "type": "string",
                                                     "example": "jane@example.com"
-                                                },
-                                                "password": {
-                                                    "type": "string",
-                                                    "example": "$2y$10$...hashed_password..."
                                                 },
                                                 "role": {
                                                     "type": "string",
@@ -2341,10 +2320,6 @@
                                                 "email": {
                                                     "type": "string",
                                                     "example": "john@example.com"
-                                                },
-                                                "password": {
-                                                    "type": "string",
-                                                    "example": "$2y$10$...hashed_password..."
                                                 },
                                                 "role": {
                                                     "type": "string",
@@ -2513,6 +2488,135 @@
                     }
                 ]
             }
+        },
+        "/api/users/{id}/reset-password": {
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Reset a user's password",
+                "description": "Allows a super_admin to reset any user's password or a user to reset their own password.",
+                "operationId": "7c1641dd28c8d3320c9e91bb53c73296",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "example": "newpassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password berhasil direset"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pengguna tidak ditemukan"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validasi gagal"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mereset password"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
         }
     },
     "tags": [
@@ -2522,7 +2626,7 @@
         },
         {
             "name": "Users",
-            "description": "API Endpoints for managing users (super admin only)"
+            "description": "API Endpoints for managing users (super admin only, except for reset password)"
         },
         {
             "name": "Auth",

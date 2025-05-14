@@ -3,6 +3,7 @@
 /public/build
 /public/hot
 /public/storage
+/public/phpmyadmin
 /storage/*.key
 /storage/pail
 /vendor

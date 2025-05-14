@@ -231,12 +231,27 @@ class DocumentController extends Controller
     {
         try {
             $user = Auth::user();
-            $query = Document::with(['user', 'category', 'documentApprovals.approver']);
 
+            // Validasi role pengguna
             if (!in_array($user->role, ['super_admin', 'manager'])) {
-                $query->where('status', 'approved');
+                return response()->json([
+                    'message' => 'Akses ditolak. Hanya super_admin atau manager yang dapat mengakses.',
+                ], 403);
             }
 
+            // Query dasar dengan relasi
+            $query = Document::with(['user', 'category', 'documentApprovals.approver']);
+
+            // Filter berdasarkan role
+            if ($user->role === 'manager') {
+                // Untuk manager, hanya tampilkan dokumen dengan manager_id miliknya
+                // dan bukan dalam status pending_super_admin
+                $query->where('manager_id', $user->id)
+                    ->where('status', '!=', 'pending_super_admin');
+            }
+            // Untuk super_admin, tidak ada filter tambahan (tampilkan semua dokumen)
+
+            // Filter berdasarkan category_id jika ada
             if ($request->has('category_id')) {
                 $category = Category::findOrFail($request->category_id);
                 if ($category->children()->exists()) {
@@ -247,24 +262,12 @@ class DocumentController extends Controller
                 $query->where('category_id', $request->category_id);
             }
 
-            $documents = $query->get();
-
-            // Sort documents: unapproved by user at top (asc by created_at), approved by user at bottom (asc by created_at)
-            $sortedDocuments = $documents->sortBy(function ($document) use ($user) {
-                $isApprovedByUser = $document->documentApprovals->contains(function ($approval) use ($user) {
-                    return $approval->approver_id === $user->id && $approval->status !== 'pending';
-                });
-
-                // If approved by user, assign a higher sort key to push it to the bottom
-                $sortKey = $isApprovedByUser ? 1 : 0;
-
-                // Combine sort key with created_at timestamp for secondary sorting
-                return [$sortKey, $document->created_at->timestamp];
-            });
+            // Ambil dokumen dan urutkan berdasarkan created_at (terbaru ke terlama)
+            $documents = $query->orderBy('created_at', 'desc')->get();
 
             return response()->json([
                 'message' => 'Dokumen berhasil diambil',
-                'data' => $sortedDocuments->values(),
+                'data' => $documents,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([

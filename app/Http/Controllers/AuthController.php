@@ -174,7 +174,7 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
-            'fcm_token' => 'nullable|string', // Add fcm_token as an optional field
+            'fcm_token' => 'nullable|string',
         ]);
 
         if (!Auth::attempt($request->only('email', 'password'))) {
@@ -183,8 +183,13 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        // Update the user's fcm_token if provided in the request
+        // Hapus fcm_token dari user lain yang memakai token yang sama
         if ($request->has('fcm_token') && $request->fcm_token) {
+            \App\Models\User::where('fcm_token', $request->fcm_token)
+                ->where('id', '!=', $user->id)
+                ->update(['fcm_token' => null]);
+
+            // Update user yang sedang login dengan fcm_token baru
             $user->update(['fcm_token' => $request->fcm_token]);
         }
 
@@ -196,6 +201,7 @@ class AuthController extends Controller
             'user' => $user
         ]);
     }
+
 
 
     /**
@@ -222,8 +228,12 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        $user = $request->user();
 
-        $request->user()->currentAccessToken()->delete();
+        // Hapus fcm_token user saat logout
+        $user->update(['fcm_token' => null]);
+
+        $user->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out successfully']);
     }

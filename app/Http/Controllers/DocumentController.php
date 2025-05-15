@@ -244,10 +244,10 @@ class DocumentController extends Controller
 
             // Filter berdasarkan role
             if ($user->role === 'manager') {
-                // Untuk manager, hanya tampilkan dokumen dengan manager_id miliknya
-                // dan bukan dalam status pending_super_admin
-                $query->where('manager_id', $user->id)
-                    ->where('status', '!=', 'pending_super_admin');
+                // Untuk manager, hanya tampilkan dokumen yang memiliki document_approvals dengan approver_id miliknya
+                $query->whereHas('documentApprovals', function ($q) use ($user) {
+                    $q->where('approver_id', $user->id);
+                });
             }
             // Untuk super_admin, tidak ada filter tambahan (tampilkan semua dokumen)
 

@@ -633,4 +633,92 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * @OA\Put(
+     *     path="/api/users/update-profile",
+     *     tags={"Users"},
+     *     summary="Update logged-in user's profile",
+     *     description="Allows the authenticated user to update their name and email.",
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string", example="Jane Doe"),
+     *             @OA\Property(property="email", type="string", example="jane@example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profile updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Profil berhasil diperbarui"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Jane Doe"),
+     *                 @OA\Property(property="email", type="string", example="jane@example.com"),
+     *                 @OA\Property(property="role", type="string", example="user"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Validasi gagal"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal memperbarui profil"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function updateProfile(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            ]);
+
+            $user->update([
+                'name' => $request->name,
+                'email' => $request->email,
+            ]);
+
+            return response()->json([
+                'message' => 'Profil berhasil diperbarui',
+                'data' => $user->only(['id', 'name', 'email', 'role', 'created_at', 'updated_at']),
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal memperbarui profil',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

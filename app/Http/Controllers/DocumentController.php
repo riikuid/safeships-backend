@@ -240,16 +240,15 @@ class DocumentController extends Controller
             }
 
             // Query dasar dengan relasi
-            $query = Document::with(['user', 'category', 'documentApprovals.approver']);
+            $query = Document::with(['user', 'category', 'documentApprovals.approver'])
+                ->withTrashed(); // Sertakan dokumen yang di-soft-delete
 
             // Filter berdasarkan role
             if ($user->role === 'manager') {
-                // Untuk manager, hanya tampilkan dokumen yang memiliki document_approvals dengan approver_id miliknya
                 $query->whereHas('documentApprovals', function ($q) use ($user) {
                     $q->where('approver_id', $user->id);
                 });
             }
-            // Untuk super_admin, tidak ada filter tambahan (tampilkan semua dokumen)
 
             // Filter berdasarkan category_id jika ada
             if ($request->has('category_id')) {
@@ -262,7 +261,7 @@ class DocumentController extends Controller
                 $query->where('category_id', $request->category_id);
             }
 
-            // Ambil dokumen dan urutkan berdasarkan created_at (terbaru ke terlama)
+            // Ambil dokumen dan urutkan berdasarkan created_at
             $documents = $query->orderBy('created_at', 'desc')->get();
 
             return response()->json([
@@ -621,6 +620,7 @@ class DocumentController extends Controller
     {
         try {
             $document = Document::with(['user', 'category', 'documentApprovals.approver'])
+                ->withTrashed() // Sertakan dokumen yang di-soft-delete
                 ->findOrFail($id);
 
             $user = Auth::user();
@@ -1087,6 +1087,7 @@ class DocumentController extends Controller
         try {
             $user = Auth::user();
             $query = Document::with(['category', 'documentApprovals.approver'])
+                ->withTrashed() // Sertakan dokumen yang di-soft-delete
                 ->where('user_id', $user->id);
 
             if ($request->has('status')) {
@@ -1115,7 +1116,7 @@ class DocumentController extends Controller
      *     operationId="deleteDocument",
      *     tags={"Documents"},
      *     summary="Delete a specific document by ID",
-     *     description="Deletes a document and its associated approvals and notifications. Only super_admin or the document uploader can delete.",
+     *     description="Soft deletes a document, sets its status to DELETED, deletes its file, and updates the approval status to DELETED for the super admin who deletes it. Only super_admin can delete. Sends a notification to the document owner.",
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="id",
@@ -1158,11 +1159,11 @@ class DocumentController extends Controller
     public function destroy($id)
     {
         try {
-            $document = Document::findOrFail($id);
+            $document = Document::withTrashed()->findOrFail($id);
             $user = Auth::user();
 
-            // Hanya super_admin atau pengguna yang mengunggah dokumen dapat menghapus
-            if ($user->role !== 'super_admin' && $document->user_id !== $user->id) {
+            // Hanya super_admin yang dapat menghapus
+            if ($user->role !== 'super_admin') {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 
@@ -1171,14 +1172,39 @@ class DocumentController extends Controller
                 Storage::disk('public')->delete($document->file_path);
             }
 
-            // Hapus entri terkait
-            DocumentApproval::where('document_id', $document->id)->delete();
-            Notification::where('reference_type', 'document')
-                ->where('reference_id', $document->id)
-                ->delete();
+            // Ubah status dokumen menjadi DELETED
+            $document->status = 'DELETED';
+            $document->save();
 
-            // Hapus dokumen
+            // Soft delete dokumen
             $document->delete();
+
+            // Ubah status DocumentApproval untuk super admin yang menghapus menjadi DELETED
+            DocumentApproval::where('document_id', $document->id)
+                ->where('approver_id', $user->id)
+                ->update(['status' => 'DELETED']);
+
+            // Kirim notifikasi ke pemilik dokumen
+            $uploader = User::find($document->user_id);
+            if ($uploader) {
+                Notification::create([
+                    'user_id' => $document->user_id,
+                    'title' => 'Dokumen Dihapus',
+                    'message' => "Dokumen '{$document->title}' telah dihapus oleh super admin.",
+                    'reference_type' => 'document',
+                    'reference_id' => $document->id,
+                ]);
+
+                FcmHelper::send(
+                    $uploader->fcm_token,
+                    'Dokumen Dihapus',
+                    "Dokumen '{$document->title}' telah dihapus oleh super admin.",
+                    [
+                        'reference_type' => 'document',
+                        'reference_id' => (string) $document->id,
+                    ]
+                );
+            }
 
             return response()->json([
                 'message' => 'Dokumen berhasil dihapus',
@@ -1204,7 +1230,7 @@ class DocumentController extends Controller
      *     operationId="deleteDocumentsByCategory",
      *     tags={"Documents"},
      *     summary="Delete all documents under a level 3 category",
-     *     description="Deletes all documents under the specified level 3 category, including their associated approvals and notifications. Only super_admin can delete.",
+     *     description="Soft deletes all documents under the specified level 3 category, sets their status to DELETED, deletes their files, and updates the approval status to DELETED for the super admin who deletes them. Only super_admin can delete. Sends notifications to document owners.",
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="category_id",
@@ -1256,7 +1282,7 @@ class DocumentController extends Controller
         try {
             $user = Auth::user();
 
-            // Hanya super_admin yang dapat menghapus semua dokumen di kategori
+            // Hanya super_admin yang dapat menghapus
             if ($user->role !== 'super_admin') {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
@@ -1264,7 +1290,7 @@ class DocumentController extends Controller
             // Ambil kategori
             $category = Category::findOrFail($category_id);
 
-            // Pastikan kategori adalah level 3 (tidak memiliki anak)
+            // Pastikan kategori adalah level 3
             if ($category->children()->exists()) {
                 return response()->json([
                     'message' => 'Kategori harus berada di level terendah (Level 3)',
@@ -1274,16 +1300,46 @@ class DocumentController extends Controller
             // Ambil semua dokumen di kategori
             $documents = Document::where('category_id', $category_id)->get();
 
-            // Hapus file, approvals, dan notifikasi untuk setiap dokumen
+            // Proses setiap dokumen
             foreach ($documents as $document) {
+                // Hapus file
                 if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
                     Storage::disk('public')->delete($document->file_path);
                 }
-                DocumentApproval::where('document_id', $document->id)->delete();
-                Notification::where('reference_type', 'document')
-                    ->where('reference_id', $document->id)
-                    ->delete();
+
+                // Ubah status menjadi DELETED
+                $document->status = 'DELETED';
+                $document->save();
+
+                // Soft delete dokumen
                 $document->delete();
+
+                // Ubah status DocumentApproval untuk super admin yang menghapus menjadi DELETED
+                DocumentApproval::where('document_id', $document->id)
+                    ->where('approver_id', $user->id)
+                    ->update(['status' => 'DELETED']);
+
+                // Kirim notifikasi ke pemilik dokumen
+                $uploader = User::find($document->user_id);
+                if ($uploader) {
+                    Notification::create([
+                        'user_id' => $document->user_id,
+                        'title' => 'Dokumen Dihapus',
+                        'message' => "Dokumen '{$document->title}' dalam kategori '{$category->name}' telah dihapus oleh super admin.",
+                        'reference_type' => 'document',
+                        'reference_id' => $document->id,
+                    ]);
+
+                    FcmHelper::send(
+                        $uploader->fcm_token,
+                        'Dokumen Dihapus',
+                        "Dokumen '{$document->title}' dalam kategori '{$category->name}' telah dihapus oleh super admin.",
+                        [
+                            'reference_type' => 'document',
+                            'reference_id' => (string) $document->id,
+                        ]
+                    );
+                }
             }
 
             return response()->json([

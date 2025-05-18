@@ -1617,6 +1617,66 @@
                 ]
             }
         },
+        "/api/documents/assessment-progress": {
+            "get": {
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Get progress percentage for K3 assessment levels",
+                "description": "Returns the progress percentage for Initial, Transition, and Advanced assessment levels based on approved documents in categories with matching assessment codes.",
+                "operationId": "getAssessmentProgress",
+                "responses": {
+                    "200": {
+                        "description": "Assessment progress retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "assessment": {
+                                                "type": "string",
+                                                "example": "Tingkat Awal"
+                                            },
+                                            "progress": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 60.5
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengambil progres penilaian"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/notifications": {
             "get": {
                 "tags": [

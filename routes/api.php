@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::name('documents.')->prefix('documents')->group(function () {
         Route::post('/', [DocumentController::class, 'store']);
         Route::get('/', [DocumentController::class, 'index']);
+        Route::get('/assessment-progress', [DocumentController::class, 'getAssessmentProgress']);
         Route::get('/managerial', [DocumentController::class, 'documentsManagerial']);
         Route::get('/categories', [DocumentController::class, 'getAllCategories']);
         Route::get('/{id}/detail', [DocumentController::class, 'show']);
@@ -38,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->middleware('role:super_admin');
         Route::put('/update-profile', [UserController::class, 'updateProfile']);
+
         Route::get('/managers', [UserController::class, 'getManagers']);
         Route::get('{id}', [UserController::class, 'show'])->middleware('role:super_admin');
         Route::post('/', [UserController::class, 'store'])->middleware('role:super_admin');

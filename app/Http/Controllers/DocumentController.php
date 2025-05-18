@@ -1357,4 +1357,277 @@ class DocumentController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get assessment progress for K3 documentation.
+     *
+     * @OA\Get(
+     *     path="/api/documents/assessment-progress",
+     *     operationId="getAssessmentProgress",
+     *     tags={"Documents"},
+     *     summary="Get progress percentage for K3 assessment levels",
+     *     description="Returns the progress percentage for Initial, Transition, and Advanced assessment levels based on approved documents in categories with matching assessment codes.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Assessment progress retrieved successfully",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="assessment", type="string", example="Tingkat Awal"),
+     *                 @OA\Property(property="progress", type="number", format="float", example=60.5)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil progres penilaian"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function getAssessmentProgress(Request $request)
+    {
+        try {
+            // Daftar sub-kriteria per tingkat berdasarkan dokumen
+            $initialPoints = [
+                '1.1.1',
+                '1.1.3',
+                '1.2.2',
+                '1.2.4',
+                '1.2.5',
+                '1.2.6',
+                '1.3.3',
+                '1.4.1',
+                '1.4.3',
+                '1.4.4',
+                '1.4.5',
+                '1.4.6',
+                '1.4.7',
+                '1.4.8',
+                '1.4.9',
+                '2.1.1',
+                '2.4.1',
+                '3.1.1',
+                '3.2.2',
+                '4.1.1',
+                '5.1.1',
+                '5.1.2',
+                '5.2.1',
+                '6.1.1',
+                '6.1.5',
+                '6.1.6',
+                '6.1.7',
+                '6.2.1',
+                '6.3.1',
+                '6.3.2',
+                '6.4.1',
+                '6.4.2',
+                '6.4.3',
+                '6.4.4',
+                '6.5.2',
+                '6.5.3',
+                '6.5.4',
+                '6.5.7',
+                '6.5.8',
+                '6.5.9',
+                '6.7.4',
+                '6.7.6',
+                '6.8.1',
+                '6.8.2',
+                '7.1.1',
+                '7.2.1',
+                '7.2.2',
+                '7.2.3',
+                '7.4.1',
+                '7.4.3',
+                '7.4.4',
+                '7.4.5',
+                '8.3.1',
+                '9.1.1',
+                '9.1.2',
+                '9.2.1',
+                '9.2.3',
+                '9.3.1',
+                '9.3.3',
+                '9.3.4',
+                '10.1.1',
+                '10.1.2',
+                '10.2.1',
+                '10.2.2',
+                '12.2.1',
+                '12.2.2',
+                '12.3.1',
+                '12.5.1'
+            ];
+
+            $transitionPoints = array_merge($initialPoints, [
+                '1.1.2',
+                '1.2.1',
+                '1.2.3',
+                '1.3.1',
+                '1.4.2',
+                '2.1.2',
+                '2.1.3',
+                '2.1.4',
+                '2.2.1',
+                '2.3.1',
+                '2.3.2',
+                '2.3.4',
+                '3.1.2',
+                '3.1.3',
+                '3.1.4',
+                '3.2.1',
+                '4.1.2',
+                '4.2.1',
+                '5.1.3',
+                '6.1.2',
+                '6.1.3',
+                '6.1.4',
+                '6.2.2',
+                '6.2.3',
+                '6.2.4',
+                '6.2.5',
+                '6.5.1',
+                '6.5.5',
+                '6.5.6',
+                '6.5.10',
+                '6.7.1',
+                '6.7.2',
+                '6.7.3',
+                '6.7.5',
+                '6.7.7',
+                '7.1.2',
+                '7.1.3',
+                '7.1.4',
+                '7.1.5',
+                '7.1.6',
+                '7.1.7',
+                '7.4.2',
+                '8.1.1',
+                '8.2.1',
+                '8.3.2',
+                '9.1.3',
+                '9.1.4',
+                '9.3.5',
+                '10.1.3',
+                '10.1.4',
+                '11.1.1',
+                '11.1.2',
+                '11.1.3',
+                '12.1.2',
+                '12.1.4',
+                '12.1.5',
+                '12.1.6',
+                '12.3.2',
+                '12.4.1'
+            ]);
+
+            $advancedPoints = array_merge($transitionPoints, [
+                '1.1.4',
+                '1.1.5',
+                '1.2.7',
+                '1.3.2',
+                '1.4.10',
+                '1.4.11',
+                '2.1.5',
+                '2.1.6',
+                '2.2.2',
+                '2.2.3',
+                '2.3.3',
+                '3.2.3',
+                '3.2.4',
+                '4.1.3',
+                '4.1.4',
+                '4.2.2',
+                '4.2.3',
+                '5.1.4',
+                '5.1.5',
+                '5.3.1',
+                '5.4.1',
+                '5.4.2',
+                '6.1.8',
+                '6.6.1',
+                '6.6.2',
+                '6.9.1',
+                '7.3.1',
+                '7.3.2',
+                '8.3.3',
+                '8.3.4',
+                '8.3.5',
+                '8.3.6',
+                '8.4.1',
+                '9.2.2',
+                '9.3.2',
+                '12.1.1',
+                '12.1.3',
+                '12.1.7',
+                '12.3.3'
+            ]);
+
+            // Hitung total sub-kriteria per tingkat
+            $totalInitial = count($initialPoints);
+            $totalTransition = count($transitionPoints);
+            $totalAdvanced = count($advancedPoints);
+
+            // Ambil sub-kriteria yang terpenuhi (ada dokumen approved di kategori terkait)
+            $fulfilledInitial = Category::whereIn('code', $initialPoints)
+                ->whereHas('documents', function ($query) {
+                    $query->where('status', 'approved')->whereNull('deleted_at');
+                })
+                ->pluck('code')
+                ->unique()
+                ->count();
+
+            $fulfilledTransition = Category::whereIn('code', $transitionPoints)
+                ->whereHas('documents', function ($query) {
+                    $query->where('status', 'approved')->whereNull('deleted_at');
+                })
+                ->pluck('code')
+                ->unique()
+                ->count();
+
+            $fulfilledAdvanced = Category::whereIn('code', $advancedPoints)
+                ->whereHas('documents', function ($query) {
+                    $query->where('status', 'approved')->whereNull('deleted_at');
+                })
+                ->pluck('code')
+                ->unique()
+                ->count();
+
+            // Hitung persentase
+            $initialProgress = $totalInitial > 0 ? ($fulfilledInitial / $totalInitial) * 100 : 0;
+            $transitionProgress = $totalTransition > 0 ? ($fulfilledTransition / $totalTransition) * 100 : 0;
+            $advancedProgress = $totalAdvanced > 0 ? ($fulfilledAdvanced / $totalAdvanced) * 100 : 0;
+
+            // Format data untuk grafik
+            $data = [
+                [
+                    'assessment' => 'Tingkat Awal',
+                    'progress' => round($initialProgress, 2)
+                ],
+                [
+                    'assessment' => 'Tingkat Transisi',
+                    'progress' => round($transitionProgress, 2)
+                ],
+                [
+                    'assessment' => 'Tingkat Lanjutan',
+                    'progress' => round($advancedProgress, 2)
+                ]
+            ];
+
+            return response()->json([
+                'message' => 'Progres penilaian berhasil diambil',
+                'data' => $data
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengambil progres penilaian',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

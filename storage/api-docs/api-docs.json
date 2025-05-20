@@ -2739,10 +2739,22 @@
                                                     "id": {
                                                         "type": "integer"
                                                     },
+                                                    "type": {
+                                                        "type": "string"
+                                                    },
                                                     "location": {
                                                         "type": "string"
                                                     },
+                                                    "description": {
+                                                        "type": "string"
+                                                    },
                                                     "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string"
+                                                    },
+                                                    "user_approval_status": {
                                                         "type": "string"
                                                     }
                                                 },

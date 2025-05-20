@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FcmHelper;
+use App\Http\Resources\SafetyPatrolCardResource;
 use App\Models\SafetyPatrol;
 use App\Models\SafetyPatrolApproval;
 use App\Models\SafetyPatrolAction;
@@ -1104,8 +1105,12 @@ class SafetyPatrolController extends Controller
      *                 type="array",
      *                 @OA\Items(
      *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="type", type="string"),
      *                     @OA\Property(property="location", type="string"),
-     *                     @OA\Property(property="status", type="string")
+     *                     @OA\Property(property="description", type="string"),
+     *                     @OA\Property(property="status", type="string"),
+     *                     @OA\Property(property="created_at", type="string"),
+     *                     @OA\Property(property="user_approval_status", type="string")
      *                 )
      *             )
      *         )
@@ -1135,13 +1140,14 @@ class SafetyPatrolController extends Controller
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 
-            $query = SafetyPatrol::with(['user', 'manager', 'approvals.approver', 'action.actor', 'feedbacks.approvals.approver'])
+            $query = SafetyPatrol::with(['approvals', 'feedbacks.approvals'])
                 ->withTrashed();
 
             if ($user->role === 'manager') {
                 $query->whereHas('approvals', function ($q) use ($user) {
                     $q->where('approver_id', $user->id);
-                })->orWhere('manager_id', $user->id);
+                });
+                // })->orWhere('manager_id', $user->id);
             }
 
             if ($request->has('status')) {
@@ -1152,7 +1158,7 @@ class SafetyPatrolController extends Controller
 
             return response()->json([
                 'message' => 'Laporan berhasil diambil',
-                'data' => $patrols,
+                'data' => SafetyPatrolCardResource::collection($patrols),
             ]);
         } catch (Exception $e) {
             return response()->json([

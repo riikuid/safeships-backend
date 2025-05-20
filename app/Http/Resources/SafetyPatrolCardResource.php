@@ -17,25 +17,23 @@ class SafetyPatrolCardResource extends JsonResource
         $userId = auth()->id();
         $approvalStatus = $this->approvals
             ?->firstWhere('approver_id', $userId)
-            ?->status
-            ?->value ?? 'pending';
+            ?->status ?? 'pending';
 
         // Jika status pending_feedback_approval, cek feedback approvals
-        if ($this->status === \App\Enums\SafetyPatrolStatus::PENDING_FEEDBACK_APPROVAL) {
+        if ($this->status === 'pending_feedback_approval') {
             $approvalStatus = $this->feedbacks
                 ?->last()
                 ?->approvals
                 ?->firstWhere('approver_id', $userId)
-                ?->status
-                ?->value ?? 'pending';
+                ?->status ?? 'pending';
         }
 
         return [
             'id' => $this->id,
-            'type' => $this->type->value,
+            'type' => $this->type,
             'location' => $this->location,
             'description' => $this->description,
-            'status' => $this->status->value,
+            'status' => $this->status,
             'created_at' => $this->created_at->toDateTimeString(),
             'user_approval_status' => $approvalStatus,
         ];

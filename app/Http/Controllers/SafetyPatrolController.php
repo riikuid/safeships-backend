@@ -20,9 +20,123 @@ use Exception;
 use Illuminate\Support\Facades\Validator;
 
 /**
- * @OA\Tag(
- *     name="SafetyPatrols",
- *     description="API Endpoints for managing safety patrol reports"
+ * @OA\Info(title="Safety Patrol API", version="1.0.0")
+ * @OA\SecurityScheme(
+ *     type="http",
+ *     description="Use Bearer token for authentication",
+ *     name="Authorization",
+ *     in="header",
+ *     scheme="bearer",
+ *     bearerFormat="JWT",
+ *     securityScheme="bearerAuth"
+ * )
+ *
+ * @OA\Schema(
+ *     schema="SafetyPatrolModel",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="user_id", type="integer", example=1),
+ *     @OA\Property(property="manager_id", type="integer", example=2),
+ *     @OA\Property(property="report_date", type="string", format="date", example="2025-05-20"),
+ *     @OA\Property(property="image_path", type="string", example="safety_patrols/20250520114900_location.jpg"),
+ *     @OA\Property(property="type", type="string", enum={"condition", "unsafe_action"}, example="condition"),
+ *     @OA\Property(property="description", type="string", example="Unsafe condition detected"),
+ *     @OA\Property(property="location", type="string", example="Warehouse A"),
+ *     @OA\Property(property="status", type="string", enum={"pending_super_admin", "pending_manager", "pending_action", "pending_feedback_approval", "done", "rejected"}, example="pending_super_admin"),
+ *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-05-20T23:49:00Z"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-05-20T23:49:00Z"),
+ *     @OA\Property(property="deleted_at", type="string", format="date-time", nullable=true, example=null),
+ *     @OA\Property(
+ *         property="user",
+ *         type="object",
+ *         @OA\Property(property="id", type="integer", example=1),
+ *         @OA\Property(property="name", type="string", example="John Doe")
+ *     ),
+ *     @OA\Property(
+ *         property="manager",
+ *         type="object",
+ *         @OA\Property(property="id", type="integer", example=2),
+ *         @OA\Property(property="name", type="string", example="Jane Manager")
+ *     ),
+ *     @OA\Property(
+ *         property="approvals",
+ *         type="array",
+ *         @OA\Items(
+ *             type="object",
+ *             @OA\Property(property="id", type="integer", example=1),
+ *             @OA\Property(property="safety_patrol_id", type="integer", example=1),
+ *             @OA\Property(property="approver_id", type="integer", example=3),
+ *             @OA\Property(property="status", type="string", enum={"pending", "approved", "rejected"}, example="pending"),
+ *             @OA\Property(property="approved_at", type="string", format="date-time", nullable=true, example=null),
+ *             @OA\Property(property="comments", type="string", nullable=true, example="Not sufficient"),
+ *             @OA\Property(
+ *                 property="approver",
+ *                 type="object",
+ *                 @OA\Property(property="id", type="integer", example=3),
+ *                 @OA\Property(property="name", type="string", example="Super Admin")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="action",
+ *         type="object",
+ *         nullable=true,
+ *         @OA\Property(property="id", type="integer", example=1),
+ *         @OA\Property(property="safety_patrol_id", type="integer", example=1),
+ *         @OA\Property(property="actor_id", type="integer", example=4),
+ *         @OA\Property(property="deadline", type="string", format="date", example="2025-05-25"),
+ *         @OA\Property(
+ *             property="actor",
+ *             type="object",
+ *             @OA\Property(property="id", type="integer", example=4),
+ *             @OA\Property(property="name", type="string", example="Action User")
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="feedbacks",
+ *         type="array",
+ *         @OA\Items(
+ *             type="object",
+ *             @OA\Property(property="id", type="integer", example=1),
+ *             @OA\Property(property="safety_patrol_id", type="integer", example=1),
+ *             @OA\Property(property="actor_id", type="integer", example=4),
+ *             @OA\Property(property="feedback_date", type="string", format="date", example="2025-05-22"),
+ *             @OA\Property(property="image_path", type="string", example="safety_patrol_feedbacks/20250522114900_feedback.jpg"),
+ *             @OA\Property(property="description", type="string", example="Action taken"),
+ *             @OA\Property(property="status", type="string", enum={"pending", "approved", "rejected"}, example="pending"),
+ *             @OA\Property(
+ *                 property="approvals",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="id", type="integer", example=1),
+ *                     @OA\Property(property="feedback_id", type="integer", example=1),
+ *                     @OA\Property(property="approver_id", type="integer", example=3),
+ *                     @OA\Property(property="status", type="string", enum={"pending", "approved", "rejected"}, example="pending"),
+ *                     @OA\Property(property="approved_at", type="string", format="date-time", nullable=true, example=null),
+ *                     @OA\Property(property="comments", type="string", nullable=true, example="Feedback not clear"),
+ *                     @OA\Property(
+ *                         property="approver",
+ *                         type="object",
+ *                         @OA\Property(property="id", type="integer", example=3),
+ *                         @OA\Property(property="name", type="string", example="Super Admin")
+ *                     )
+ *                 )
+ *             )
+ *         )
+ *     )
+ * )
+ *
+ * @OA\Schema(
+ *     schema="SafetyPatrolCardModel",
+ *     type="object",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="type", type="string", enum={"condition", "unsafe_action"}, example="condition"),
+ *     @OA\Property(property="location", type="string", example="Warehouse A"),
+ *     @OA\Property(property="description", type="string", example="Unsafe condition detected"),
+ *     @OA\Property(property="status", type="string", enum={"pending_super_admin", "pending_manager", "pending_action", "pending_feedback_approval", "done", "rejected"}, example="pending_super_admin"),
+ *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-05-20T23:49:00Z"),
+ *     @OA\Property(property="user_approval_status", type="string", enum={"pending", "approved", "rejected"}, example="pending")
  * )
  */
 class SafetyPatrolController extends Controller
@@ -30,44 +144,30 @@ class SafetyPatrolController extends Controller
     /**
      * @OA\Get(
      *     path="/api/safety-patrols",
-     *     tags={"SafetyPatrols"},
-     *     summary="Get list of safety patrol reports",
-     *     security={{"sanctum":{}}},
+     *     summary="Get list of safety patrols",
+     *     tags={"Safety Patrol"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="status",
      *         in="query",
      *         description="Filter by status",
      *         required=false,
-     *         @OA\Schema(type="string", enum={"pending_super_admin", "pending_manager", "pending_action", "action_in_progress", "pending_feedback_approval", "done", "rejected"})
+     *         @OA\Schema(type="string", enum={"pending_super_admin", "pending_manager", "pending_action", "pending_feedback_approval", "done", "rejected"})
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Reports retrieved successfully",
+     *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Laporan berhasil diambil"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(
-     *                     @OA\Property(property="id", type="integer"),
-     *                     @OA\Property(property="location", type="string"),
-     *                     @OA\Property(property="status", type="string")
-     *                 )
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Unauthorized",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/SafetyPatrolModel"))
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Server error",
+     *         description="Internal server error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Gagal mengambil laporan")
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil laporan"),
+     *             @OA\Property(property="error", type="string")
      *         )
      *     )
      * )
@@ -110,35 +210,29 @@ class SafetyPatrolController extends Controller
     /**
      * @OA\Post(
      *     path="/api/safety-patrols",
-     *     tags={"SafetyPatrols"},
      *     summary="Create a new safety patrol report",
-     *     security={{"sanctum":{}}},
+     *     tags={"Safety Patrol"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 @OA\Property(property="manager_id", type="integer", example=2),
-     *                 @OA\Property(property="report_date", type="string", format="date", example="2025-05-19"),
-     *                 @OA\Property(property="image", type="string", format="binary"),
-     *                 @OA\Property(property="type", type="string", enum={"condition", "unsafe_action"}, example="condition"),
-     *                 @OA\Property(property="description", type="string", example="Peralatan rusak di area produksi"),
-     *                 @OA\Property(property="location", type="string", example="Gudang Utama")
+     *                 @OA\Property(property="manager_id", type="integer", description="ID of the manager", example=2),
+     *                 @OA\Property(property="report_date", type="string", format="date", description="Date of the report", example="2025-05-20"),
+     *                 @OA\Property(property="image", type="string", format="binary", description="Image file (max 5MB)"),
+     *                 @OA\Property(property="type", type="string", enum={"condition", "unsafe_action"}, description="Type of report", example="condition"),
+     *                 @OA\Property(property="description", type="string", description="Description of the issue", example="Unsafe condition detected"),
+     *                 @OA\Property(property="location", type="string", description="Location of the issue (max 255 characters)", example="Warehouse A")
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Safety patrol report created successfully",
+     *         description="Report created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Laporan safety patrol berhasil dibuat"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="object",
-     *                 @OA\Property(property="id", type="integer"),
-     *                 @OA\Property(property="report_date", type="string"),
-     *                 @OA\Property(property="status", type="string")
-     *             )
+     *             @OA\Property(property="data", ref="#/components/schemas/SafetyPatrolModel")
      *         )
      *     ),
      *     @OA\Response(
@@ -151,7 +245,7 @@ class SafetyPatrolController extends Controller
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Server error",
+     *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Gagal membuat laporan"),
      *             @OA\Property(property="error", type="string")
@@ -165,7 +259,7 @@ class SafetyPatrolController extends Controller
             $request->validate([
                 'manager_id' => 'required|exists:users,id,role,manager',
                 'report_date' => 'required|date',
-                'image' => 'required|image|max:5120', // Maks 5MB
+                'image' => 'required|image|max:5120',
                 'type' => 'required|in:condition,unsafe_action',
                 'description' => 'required|string',
                 'location' => 'required|string|max:255',
@@ -224,7 +318,7 @@ class SafetyPatrolController extends Controller
 
             return response()->json([
                 'message' => 'Laporan safety patrol berhasil dibuat',
-                'data' => $patrol->load(['user', 'manager']),
+                'data' => $patrol->load(['user', 'manager', 'approvals.approver', 'action.actor', 'feedbacks.approvals.approver']),
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
@@ -242,27 +336,22 @@ class SafetyPatrolController extends Controller
     /**
      * @OA\Get(
      *     path="/api/safety-patrols/{id}/detail",
-     *     tags={"SafetyPatrols"},
-     *     summary="Get a specific safety patrol report",
-     *     security={{"sanctum":{}}},
+     *     summary="Get details of a specific safety patrol",
+     *     tags={"Safety Patrol"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
+     *         description="ID of the safety patrol",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Report retrieved successfully",
+     *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Laporan berhasil diambil"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="object",
-     *                 @OA\Property(property="id", type="integer"),
-     *                 @OA\Property(property="location", type="string"),
-     *                 @OA\Property(property="status", type="string")
-     *             )
+     *             @OA\Property(property="data", ref="#/components/schemas/SafetyPatrolModel")
      *         )
      *     ),
      *     @OA\Response(
@@ -277,6 +366,14 @@ class SafetyPatrolController extends Controller
      *         description="Report not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Laporan tidak ditemukan")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil laporan"),
+     *             @OA\Property(property="error", type="string")
      *         )
      *     )
      * )
@@ -316,48 +413,59 @@ class SafetyPatrolController extends Controller
     /**
      * @OA\Post(
      *     path="/api/safety-patrols/{id}/approve",
-     *     tags={"SafetyPatrols"},
      *     summary="Approve a safety patrol report",
-     *     security={{"sanctum":{}}},
+     *     tags={"Safety Patrol"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
+     *         description="ID of the safety patrol",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\RequestBody(
-     *         required=true,
+     *         required=false,
      *         @OA\JsonContent(
-     *             @OA\Property(property="actor_id", type="integer", example=3, description="Required for manager approval to assign an actor"),
-     *             @OA\Property(property="deadline", type="string", format="date", example="2025-06-01", description="Required for manager approval")
+     *             @OA\Property(property="actor_id", type="integer", description="ID of the actor (required for manager)", example=4),
+     *             @OA\Property(property="deadline", type="string", format="date", description="Deadline for action (required for manager)", example="2025-05-25")
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Report approved successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Laporan berhasil disetujui")
+     *             @OA\Property(property="message", type="string", example="Laporan berhasil disetujui"),
+     *             @OA\Property(property="data", ref="#/components/schemas/SafetyPatrolModel")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
      *         description="Invalid status or role",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string")
+     *             @OA\Property(property="message", type="string", example="Laporan tidak dalam status pending_super_admin")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Report or approval not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Laporan atau persetujuan tidak ditemukan")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
      *         description="Validation error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Validasi gagal")
+     *             @OA\Property(property="message", type="string", example="Validasi gagal"),
+     *             @OA\Property(property="errors", type="object")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="Report not found",
+     *         response=500,
+     *         description="Internal server error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Laporan tidak ditemukan")
+     *             @OA\Property(property="message", type="string", example="Gagal menyetujui laporan"),
+     *             @OA\Property(property="error", type="string")
      *         )
      *     )
      * )
@@ -488,7 +596,7 @@ class SafetyPatrolController extends Controller
 
             return response()->json([
                 'message' => 'Laporan berhasil disetujui',
-                'data' => $patrol->fresh(['user', 'manager', 'approvals.approver', 'action.actor']),
+                'data' => $patrol->fresh(['user', 'manager', 'approvals.approver', 'action.actor', 'feedbacks.approvals.approver']),
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -510,47 +618,58 @@ class SafetyPatrolController extends Controller
     /**
      * @OA\Post(
      *     path="/api/safety-patrols/{id}/reject",
-     *     tags={"SafetyPatrols"},
      *     summary="Reject a safety patrol report",
-     *     security={{"sanctum":{}}},
+     *     tags={"Safety Patrol"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
+     *         description="ID of the safety patrol",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="comments", type="string", example="Laporan tidak lengkap")
+     *             @OA\Property(property="comments", type="string", description="Reason for rejection", example="Insufficient evidence")
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Report rejected successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Laporan berhasil ditolak")
+     *             @OA\Property(property="message", type="string", example="Laporan berhasil ditolak"),
+     *             @OA\Property(property="data", ref="#/components/schemas/SafetyPatrolModel")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
      *         description="Invalid status or role",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string")
+     *             @OA\Property(property="message", type="string", example="Laporan tidak dalam status pending_super_admin")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Report or approval not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Laporan atau persetujuan tidak ditemukan")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
      *         description="Validation error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Validasi gagal")
+     *             @OA\Property(property="message", type="string", example="Validasi gagal"),
+     *             @OA\Property(property="errors", type="object")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="Report not found",
+     *         response=500,
+     *         description="Internal server error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Laporan tidak ditemukan")
+     *             @OA\Property(property="message", type="string", example="Gagal menolak laporan"),
+     *             @OA\Property(property="error", type="string")
      *         )
      *     )
      * )
@@ -603,7 +722,7 @@ class SafetyPatrolController extends Controller
 
             return response()->json([
                 'message' => 'Laporan berhasil ditolak',
-                'data' => $patrol->fresh(['user', 'manager', 'approvals.approver']),
+                'data' => $patrol->fresh(['user', 'manager', 'approvals.approver', 'action.actor', 'feedbacks.approvals.approver']),
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -625,12 +744,13 @@ class SafetyPatrolController extends Controller
     /**
      * @OA\Post(
      *     path="/api/safety-patrols/{id}/submit-feedback",
-     *     tags={"SafetyPatrols"},
      *     summary="Submit feedback for a safety patrol report",
-     *     security={{"sanctum":{}}},
+     *     tags={"Safety Patrol"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
+     *         description="ID of the safety patrol",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
@@ -639,9 +759,9 @@ class SafetyPatrolController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 @OA\Property(property="feedback_date", type="string", format="date", example="2025-05-25"),
-     *                 @OA\Property(property="image", type="string", format="binary"),
-     *                 @OA\Property(property="description", type="string", example="Peralatan telah diperbaiki")
+     *                 @OA\Property(property="feedback_date", type="string", format="date", description="Date of the feedback", example="2025-05-22"),
+     *                 @OA\Property(property="image", type="string", format="binary", description="Feedback image (max 5MB)"),
+     *                 @OA\Property(property="description", type="string", description="Description of the feedback", example="Action taken")
      *             )
      *         )
      *     ),
@@ -649,7 +769,8 @@ class SafetyPatrolController extends Controller
      *         response=201,
      *         description="Feedback submitted successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Feedback berhasil diunggah")
+     *             @OA\Property(property="message", type="string", example="Feedback berhasil diunggah"),
+     *             @OA\Property(property="data", ref="#/components/schemas/SafetyPatrolModel")
      *         )
      *     ),
      *     @OA\Response(
@@ -660,17 +781,26 @@ class SafetyPatrolController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Validasi gagal")
-     *         )
-     *     ),
-     *     @OA\Response(
      *         response=404,
      *         description="Report not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Laporan tidak ditemukan")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Validasi gagal"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal mengunggah feedback"),
+     *             @OA\Property(property="error", type="string")
      *         )
      *     )
      * )
@@ -754,7 +884,7 @@ class SafetyPatrolController extends Controller
 
             return response()->json([
                 'message' => 'Feedback berhasil diunggah',
-                'data' => $feedback->load(['safetyPatrol', 'actor']),
+                'data' => $patrol->fresh(['user', 'manager', 'approvals.approver', 'action.actor', 'feedbacks.approvals.approver']),
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
@@ -776,12 +906,13 @@ class SafetyPatrolController extends Controller
     /**
      * @OA\Post(
      *     path="/api/safety-patrols/feedback/{id}/approve",
-     *     tags={"SafetyPatrols"},
-     *     summary="Approve a safety patrol feedback",
-     *     security={{"sanctum":{}}},
+     *     summary="Approve feedback for a safety patrol report",
+     *     tags={"Safety Patrol"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
+     *         description="ID of the feedback",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
@@ -789,21 +920,30 @@ class SafetyPatrolController extends Controller
      *         response=200,
      *         description="Feedback approved successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Feedback berhasil disetujui")
+     *             @OA\Property(property="message", type="string", example="Feedback berhasil disetujui"),
+     *             @OA\Property(property="data", ref="#/components/schemas/SafetyPatrolModel")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=400,
-     *         description="Invalid status or role",
+     *         response=403,
+     *         description="Unauthorized",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string")
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Feedback not found",
+     *         description="Feedback or approval not found",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Feedback tidak ditemukan")
+     *             @OA\Property(property="message", type="string", example="Feedback atau persetujuan tidak ditemukan")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal menyetujui feedback"),
+     *             @OA\Property(property="error", type="string")
      *         )
      *     )
      * )
@@ -872,7 +1012,7 @@ class SafetyPatrolController extends Controller
 
             return response()->json([
                 'message' => 'Feedback berhasil disetujui',
-                'data' => $feedback->fresh(['safetyPatrol', 'approvals.approver']),
+                'data' => $patrol->fresh(['user', 'manager', 'approvals.approver', 'action.actor', 'feedbacks.approvals.approver']),
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -889,47 +1029,58 @@ class SafetyPatrolController extends Controller
     /**
      * @OA\Post(
      *     path="/api/safety-patrols/feedback/{id}/reject",
-     *     tags={"SafetyPatrols"},
-     *     summary="Reject a safety patrol feedback",
-     *     security={{"sanctum":{}}},
+     *     summary="Reject feedback for a safety patrol report",
+     *     tags={"Safety Patrol"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
+     *         description="ID of the feedback",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="comments", type="string", example="Feedback tidak memadai")
+     *             @OA\Property(property="comments", type="string", description="Reason for rejection", example="Feedback not clear")
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Feedback rejected successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Feedback berhasil ditolak")
+     *             @OA\Property(property="message", type="string", example="Feedback berhasil ditolak"),
+     *             @OA\Property(property="data", ref="#/components/schemas/SafetyPatrolModel")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=400,
-     *         description="Invalid status or role",
+     *         response=403,
+     *         description="Unauthorized",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string")
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Feedback or approval not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Feedback atau persetujuan tidak ditemukan")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
      *         description="Validation error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Validasi gagal")
+     *             @OA\Property(property="message", type="string", example="Validasi gagal"),
+     *             @OA\Property(property="errors", type="object")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="Feedback not found",
+     *         response=500,
+     *         description="Internal server error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Feedback tidak ditemukan")
+     *             @OA\Property(property="message", type="string", example="Gagal menolak feedback"),
+     *             @OA\Property(property="error", type="string")
      *         )
      *     )
      * )
@@ -999,7 +1150,7 @@ class SafetyPatrolController extends Controller
 
             return response()->json([
                 'message' => 'Feedback berhasil ditolak',
-                'data' => $feedback->fresh(['safetyPatrol', 'approvals.approver']),
+                'data' => $patrol->fresh(['user', 'manager', 'approvals.approver', 'action.actor', 'feedbacks.approvals.approver']),
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -1021,37 +1172,30 @@ class SafetyPatrolController extends Controller
     /**
      * @OA\Get(
      *     path="/api/safety-patrols/my-submissions",
-     *     tags={"SafetyPatrols"},
-     *     summary="Get user's safety patrol submissions",
-     *     security={{"sanctum":{}}},
+     *     summary="Get list of user's submitted safety patrols",
+     *     tags={"Safety Patrol"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="status",
      *         in="query",
      *         description="Filter by status",
      *         required=false,
-     *         @OA\Schema(type="string", enum={"pending_super_admin", "pending_manager", "pending_action", "action_in_progress", "pending_feedback_approval", "done", "rejected"})
+     *         @OA\Schema(type="string", enum={"pending_super_admin", "pending_manager", "pending_action", "pending_feedback_approval", "done", "rejected"})
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Submissions retrieved successfully",
+     *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Laporan berhasil diambil"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(
-     *                     @OA\Property(property="id", type="integer"),
-     *                     @OA\Property(property="location", type="string"),
-     *                     @OA\Property(property="status", type="string")
-     *                 )
-     *             )
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/SafetyPatrolModel"))
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Server error",
+     *         description="Internal server error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Gagal mengambil laporan")
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil laporan"),
+     *             @OA\Property(property="error", type="string")
      *         )
      *     )
      * )
@@ -1085,34 +1229,22 @@ class SafetyPatrolController extends Controller
     /**
      * @OA\Get(
      *     path="/api/safety-patrols/managerial",
-     *     tags={"SafetyPatrols"},
-     *     summary="Get safety patrol reports for managerial roles",
-     *     security={{"sanctum":{}}},
+     *     summary="Get list of safety patrols for managerial roles",
+     *     tags={"Safety Patrol"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="status",
      *         in="query",
      *         description="Filter by status",
      *         required=false,
-     *         @OA\Schema(type="string", enum={"pending_super_admin", "pending_manager", "pending_action", "action_in_progress", "pending_feedback_approval", "done", "rejected"})
+     *         @OA\Schema(type="string", enum={"pending_super_admin", "pending_manager", "pending_action", "pending_feedback_approval", "done", "rejected"})
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Reports retrieved successfully",
+     *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Laporan berhasil diambil"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(
-     *                     @OA\Property(property="id", type="integer"),
-     *                     @OA\Property(property="type", type="string"),
-     *                     @OA\Property(property="location", type="string"),
-     *                     @OA\Property(property="description", type="string"),
-     *                     @OA\Property(property="status", type="string"),
-     *                     @OA\Property(property="created_at", type="string"),
-     *                     @OA\Property(property="user_approval_status", type="string")
-     *                 )
-     *             )
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/SafetyPatrolCardModel"))
      *         )
      *     ),
      *     @OA\Response(
@@ -1124,9 +1256,10 @@ class SafetyPatrolController extends Controller
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Server error",
+     *         description="Internal server error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Gagal mengambil laporan")
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil laporan"),
+     *             @OA\Property(property="error", type="string")
      *         )
      *     )
      * )
@@ -1147,7 +1280,6 @@ class SafetyPatrolController extends Controller
                 $query->whereHas('approvals', function ($q) use ($user) {
                     $q->where('approver_id', $user->id);
                 });
-                // })->orWhere('manager_id', $user->id);
             }
 
             if ($request->has('status')) {
@@ -1171,38 +1303,30 @@ class SafetyPatrolController extends Controller
     /**
      * @OA\Get(
      *     path="/api/safety-patrols/my-actions",
-     *     tags={"SafetyPatrols"},
-     *     summary="Get safety patrol tasks assigned to the user as an actor",
-     *     security={{"sanctum":{}}},
+     *     summary="Get list of safety patrols assigned to user as actor",
+     *     tags={"Safety Patrol"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="status",
      *         in="query",
      *         description="Filter by status",
      *         required=false,
-     *         @OA\Schema(type="string", enum={"pending_action", "action_in_progress", "pending_feedback_approval", "done", "rejected"})
+     *         @OA\Schema(type="string", enum={"pending_super_admin", "pending_manager", "pending_action", "pending_feedback_approval", "done", "rejected"})
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Tasks retrieved successfully",
+     *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Tugas berhasil diambil"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(
-     *                     @OA\Property(property="id", type="integer"),
-     *                     @OA\Property(property="location", type="string"),
-     *                     @OA\Property(property="status", type="string"),
-     *                     @OA\Property(property="deadline", type="string", format="date")
-     *                 )
-     *             )
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/SafetyPatrolCardModel"))
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Server error",
+     *         description="Internal server error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Gagal mengambil tugas")
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil tugas"),
+     *             @OA\Property(property="error", type="string")
      *         )
      *     )
      * )
@@ -1211,7 +1335,7 @@ class SafetyPatrolController extends Controller
     {
         try {
             $user = Auth::user();
-            $query = SafetyPatrol::with(['user', 'manager', 'action.actor', 'feedbacks'])
+            $query = SafetyPatrol::with(['user', 'manager', 'action.actor', 'feedbacks', 'approvals'])
                 ->whereHas('action', function ($q) use ($user) {
                     $q->where('actor_id', $user->id);
                 });
@@ -1224,7 +1348,7 @@ class SafetyPatrolController extends Controller
 
             return response()->json([
                 'message' => 'Tugas berhasil diambil',
-                'data' => $patrols,
+                'data' => SafetyPatrolCardResource::collection($patrols),
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -1237,12 +1361,13 @@ class SafetyPatrolController extends Controller
     /**
      * @OA\Delete(
      *     path="/api/safety-patrols/{id}",
-     *     tags={"SafetyPatrols"},
-     *     summary="Delete a safety patrol report",
-     *     security={{"sanctum":{}}},
+     *     summary="Delete a safety patrol report (soft delete)",
+     *     tags={"Safety Patrol"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
+     *         description="ID of the safety patrol",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
@@ -1265,6 +1390,14 @@ class SafetyPatrolController extends Controller
      *         description="Report not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Laporan tidak ditemukan")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal menghapus laporan"),
+     *             @OA\Property(property="error", type="string")
      *         )
      *     )
      * )

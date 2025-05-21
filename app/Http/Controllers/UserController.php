@@ -70,7 +70,7 @@ class UserController extends Controller
     {
         try {
             $user = Auth::user();
-            if ($user->role !== 'super_admin') {
+            if ($user->role == 'user' ) {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 

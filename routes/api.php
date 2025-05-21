@@ -54,7 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('users')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->middleware('role:super_admin');
+        Route::get('/', [UserController::class, 'index'])->middleware('role:super_admin,manager');
         Route::put('/update-profile', [UserController::class, 'updateProfile']);
 
         Route::get('/managers', [UserController::class, 'getManagers']);

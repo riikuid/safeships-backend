@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class SafetyPatrolCardResource extends JsonResource
@@ -28,6 +27,10 @@ class SafetyPatrolCardResource extends JsonResource
                 ?->status ?? 'pending';
         }
 
+        // Determine if the user is an actor to show deadline instead of approval status
+        $isActor = $this->action && $this->action->actor_id === $userId;
+        $deadline = $isActor ? $this->action->deadline : null;
+
         return [
             'id' => $this->id,
             'type' => $this->type,
@@ -35,7 +38,8 @@ class SafetyPatrolCardResource extends JsonResource
             'description' => $this->description,
             'status' => $this->status,
             'created_at' => $this->created_at->toDateTimeString(),
-            'user_approval_status' => $approvalStatus,
+            // Use deadline for actors, otherwise user_approval_status for approvers
+            $isActor ? 'deadline' : 'user_approval_status' => $isActor ? $deadline : $approvalStatus,
         ];
     }
 }

@@ -260,7 +260,7 @@ class SafetyPatrolController extends Controller
                 'manager_id' => 'required|exists:users,id,role,manager',
                 'report_date' => 'required|date',
                 'image' => 'required|image|max:5120',
-                'type' => 'required|in:condition,unsafe_action',
+                'type' => 'required|in:unsafe_condition,unsafe_action',
                 'description' => 'required|string',
                 'location' => 'required|string|max:255',
             ]);

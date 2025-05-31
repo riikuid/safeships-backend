@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FcmHelper;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -67,11 +68,91 @@ class NotificationController extends Controller
 
             return response()->json([
                 'message' => 'Notifikasi berhasil diambil',
-                'notifications' => $notifications,
+                'data' => $notifications,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal mengambil notifikasi',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/notifications/test",
+     *     summary="Tes pengiriman notifikasi FCM ke diri sendiri (user login)",
+     *     tags={"Notifications"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"title", "body"},
+     *             @OA\Property(property="title", type="string", example="Tes Notifikasi"),
+     *             @OA\Property(property="body", type="string", example="Ini adalah pesan notifikasi uji coba."),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 example={"custom_key": "custom_value"}
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Notifikasi berhasil dikirim",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Tes notifikasi berhasil dikirim")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Tidak terautentikasi",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Terjadi kesalahan server",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal mengirim notifikasi"),
+     *             @OA\Property(property="error", type="string", example="Some error detail")
+     *         )
+     *     )
+     * )
+     */
+    public function test(Request $request)
+    {
+        try {
+            $request->validate([
+                'title' => 'required|string',
+                'body' => 'required|string',
+                'data' => 'nullable|array',
+            ]);
+
+            $user = Auth::user();
+
+            if (!$user->fcm_token) {
+                return response()->json([
+                    'message' => 'User tidak memiliki FCM token',
+                ], 422);
+            }
+
+            FcmHelper::send(
+                $user->fcm_token,
+                $request->title,
+                $request->body,
+                $request->data ?? []
+            );
+
+
+
+            return response()->json([
+                'message' => 'Tes notifikasi berhasil dikirim',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengirim notifikasi',
                 'error' => $e->getMessage(),
             ], 500);
         }

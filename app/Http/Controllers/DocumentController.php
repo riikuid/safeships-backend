@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 /**
@@ -114,7 +115,7 @@ class DocumentController extends Controller
      *         response=200,
      *         description="Documents retrieved successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Dokumen berhasil diambil"),
+     *             @OA\Property(property="message", type="string", example="Dokumentasi berhasil diambil"),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
@@ -138,7 +139,7 @@ class DocumentController extends Controller
      *         response=500,
      *         description="Server error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Gagal mengambil dokumen"),
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil Dokumentasi"),
      *             @OA\Property(property="error", type="string")
      *         )
      *     )
@@ -164,7 +165,7 @@ class DocumentController extends Controller
             $documents = $query->get();
 
             return response()->json([
-                'message' => 'Dokumen berhasil diambil',
+                'message' => 'Dokumentasi berhasil diambil',
                 'data' => $documents,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -174,7 +175,7 @@ class DocumentController extends Controller
             ], 404);
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'Gagal mengambil dokumen',
+                'message' => 'Gagal mengambil Dokumentasi',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -197,7 +198,7 @@ class DocumentController extends Controller
      *         response=200,
      *         description="Documents retrieved successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Dokumen berhasil diambil"),
+     *             @OA\Property(property="message", type="string", example="Dokumentasi berhasil diambil"),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
@@ -221,7 +222,7 @@ class DocumentController extends Controller
      *         response=500,
      *         description="Server error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Gagal mengambil dokumen"),
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil Dokumentasi"),
      *             @OA\Property(property="error", type="string")
      *         )
      *     )
@@ -241,7 +242,7 @@ class DocumentController extends Controller
 
             // Query dasar dengan relasi
             $query = Document::with(['user', 'category', 'documentApprovals.approver'])
-                ->withTrashed(); // Sertakan dokumen yang di-soft-delete
+                ->withTrashed(); // Sertakan Dokumentasi yang di-soft-delete
 
             // Filter berdasarkan role
             if ($user->role === 'manager') {
@@ -261,11 +262,11 @@ class DocumentController extends Controller
                 $query->where('category_id', $request->category_id);
             }
 
-            // Ambil dokumen dan urutkan berdasarkan created_at
+            // Ambil Dokumentasi dan urutkan berdasarkan created_at
             $documents = $query->orderBy('created_at', 'desc')->get();
 
             return response()->json([
-                'message' => 'Dokumen berhasil diambil',
+                'message' => 'Dokumentasi berhasil diambil',
                 'data' => $documents,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -275,7 +276,7 @@ class DocumentController extends Controller
             ], 404);
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'Gagal mengambil dokumen',
+                'message' => 'Gagal mengambil Dokumentasi',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -295,7 +296,7 @@ class DocumentController extends Controller
      *                 @OA\Property(property="category_id", type="integer", example=3),
      *                 @OA\Property(property="manager_id", type="integer", example=2),
      *                 @OA\Property(property="title", type="string", example="Penggunaan APAR"),
-     *                 @OA\Property(property="description", type="string", example="Dokumen pelatihan"),
+     *                 @OA\Property(property="description", type="string", example="Dokumentasi pelatihan"),
      *                 @OA\Property(property="file", type="string", format="binary")
      *             )
      *         )
@@ -304,7 +305,7 @@ class DocumentController extends Controller
      *         response=201,
      *         description="Document uploaded successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Dokumen berhasil diunggah, menunggu persetujuan"),
+     *             @OA\Property(property="message", type="string", example="Dokumentasi berhasil diunggah, menunggu persetujuan"),
      *             @OA\Property(
      *                 property="document",
      *                 type="object",
@@ -388,33 +389,25 @@ class DocumentController extends Controller
 
                 Notification::create([
                     'user_id' => $admin->id,
-                    'title' => 'Dokumen Baru Menunggu Persetujuan',
-                    'message' => "Dokumen '{$document->title}' diunggah oleh " . Auth::user()->name . ".",
-                    'reference_type' => 'document',
+                    'title' => 'Dokumentasi Baru Menunggu Persetujuan',
+                    'message' => "Dokumentasi '{$document->title}' diunggah oleh " . Auth::user()->name . ".",
+                    'reference_type' => 'document_approve',
                     'reference_id' => $document->id,
                 ]);
 
                 FcmHelper::send(
                     $admin->fcm_token,
-                    'Dokumen Baru Menunggu Persetujuan',
-                    "Dokumen '{$document->title}' diunggah oleh " . Auth::user()->name . ".",
+                    'Dokumentasi Baru Menunggu Persetujuan',
+                    "Dokumentasi '{$document->title}' diunggah oleh " . Auth::user()->name . ".",
                     [
-                        'reference_type' => 'document',
+                        'reference_type' => 'document_approve',
                         'reference_id' => (string) $document->id,
                     ]
                 );
             }
 
-            Notification::create([
-                'user_id' => Auth::id(),
-                'title' => 'Berhasil Unggah Dokumen Baru, Menunggu Persetujuan',
-                'message' => "Dokumen '{$document->title}' berhasil diunggah. Menunggu persetujuan admin",
-                'reference_type' => 'document',
-                'reference_id' => $document->id,
-            ]);
-
             return response()->json([
-                'message' => 'Dokumen berhasil diunggah, menunggu persetujuan',
+                'message' => 'Dokumentasi berhasil diunggah, menunggu persetujuan',
                 'data' => $document->load('category'),
             ], 201);
         } catch (ValidationException $e) {
@@ -424,7 +417,7 @@ class DocumentController extends Controller
             ], 422);
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'Gagal mengunggah dokumen',
+                'message' => 'Gagal mengunggah Dokumentasi',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -454,7 +447,7 @@ class DocumentController extends Controller
      *             @OA\Property(
      *                 property="message",
      *                 type="string",
-     *                 example="Berhasil mendapatkan dokumen pada kategori level 2: Kebijakan K3"
+     *                 example="Berhasil mendapatkan Dokumentasi pada kategori level 2: Kebijakan K3"
      *             ),
      *             @OA\Property(
      *                 property="data",
@@ -470,9 +463,9 @@ class DocumentController extends Controller
      *                         @OA\Items(
      *                             type="object",
      *                             @OA\Property(property="id", type="integer", example=1),
-     *                             @OA\Property(property="title", type="string", example="Dokumen Kebijakan K3 2023"),
+     *                             @OA\Property(property="title", type="string", example="Dokumentasi Kebijakan K3 2023"),
      *                             @OA\Property(property="file_path", type="string", example="storage/documents/kebijakan_k3_2023.pdf"),
-     *                             @OA\Property(property="description", type="string", example="Dokumen resmi kebijakan K3 tahun 2023")
+     *                             @OA\Property(property="description", type="string", example="Dokumentasi resmi kebijakan K3 tahun 2023")
      *                         )
      *                     )
      *                 )
@@ -557,7 +550,7 @@ class DocumentController extends Controller
                 });
 
             return response()->json([
-                'message' => 'Berhasil mendapatkan dokumen pada kategori level 2: ' . $category->name,
+                'message' => 'Berhasil mendapatkan Dokumentasi pada kategori level 2: ' . $category->name,
                 'data' => $level3Categories,
             ], 200);
         }
@@ -583,7 +576,7 @@ class DocumentController extends Controller
      *         response=200,
      *         description="Document retrieved successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Dokumen berhasil diambil"),
+     *             @OA\Property(property="message", type="string", example="Dokumentasi berhasil diambil"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -611,7 +604,7 @@ class DocumentController extends Controller
      *         response=404,
      *         description="Document not found",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Dokumen tidak ditemukan")
+     *             @OA\Property(property="message", type="string", example="Dokumentasi tidak ditemukan")
      *         )
      *     )
      * )
@@ -620,7 +613,7 @@ class DocumentController extends Controller
     {
         try {
             $document = Document::with(['user', 'category', 'documentApprovals.approver'])
-                ->withTrashed() // Sertakan dokumen yang di-soft-delete
+                ->withTrashed() // Sertakan Dokumentasi yang di-soft-delete
                 ->findOrFail($id);
 
             $user = Auth::user();
@@ -633,17 +626,17 @@ class DocumentController extends Controller
             }
 
             return response()->json([
-                'message' => 'Dokumen berhasil diambil',
+                'message' => 'Dokumentasi berhasil diambil',
                 'data' => $document,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
-                'message' => 'Dokumen tidak ditemukan',
+                'message' => 'Dokumentasi tidak ditemukan',
                 'error' => 'Document not found',
             ], 404);
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'Gagal mengambil dokumen',
+                'message' => 'Gagal mengambil Dokumentasi',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -665,7 +658,7 @@ class DocumentController extends Controller
      *         response=200,
      *         description="Document approved successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Dokumen berhasil disetujui")
+     *             @OA\Property(property="message", type="string", example="Dokumentasi berhasil disetujui")
      *         )
      *     ),
      *     @OA\Response(
@@ -686,7 +679,7 @@ class DocumentController extends Controller
      *         response=404,
      *         description="Document or approval not found",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Dokumen atau persetujuan tidak ditemukan")
+     *             @OA\Property(property="message", type="string", example="Dokumentasi atau persetujuan tidak ditemukan")
      *         )
      *     )
      * )
@@ -699,10 +692,10 @@ class DocumentController extends Controller
             $user = Auth::user();
 
             if ($user->role === 'super_admin' && $document->status !== 'pending_super_admin') {
-                return response()->json(['message' => 'Dokumen tidak dalam status pending_super_admin'], 400);
+                return response()->json(['message' => 'Dokumentasi tidak dalam status pending_super_admin'], 400);
             }
             if ($user->role === 'manager' && ($document->status !== 'pending_manager' || $document->manager_id !== $user->id)) {
-                return response()->json(['message' => 'Dokumen tidak dalam status pending_manager atau Anda bukan manajer'], 400);
+                return response()->json(['message' => 'Dokumentasi tidak dalam status pending_manager atau Anda bukan manajer'], 400);
             }
 
             $approval = DocumentApproval::where('document_id', $id)
@@ -726,33 +719,33 @@ class DocumentController extends Controller
 
                     Notification::create([
                         'user_id' => $document->manager_id,
-                        'title' => 'Dokumen Menunggu Persetujuan Anda',
-                        'message' => "Dokumen '{$document->title}' telah disetujui super admin. Menunggu persetujuan Anda sebagai manajer.",
-                        'reference_type' => 'document',
+                        'title' => 'Dokumentasi Menunggu Persetujuan Anda',
+                        'message' => "Dokumentasi '{$document->title}' telah disetujui super admin. Menunggu persetujuan Anda sebagai manajer.",
+                        'reference_type' => 'document_approve',
                         'reference_id' => $document->id,
                     ]);
                     $manager = User::find($document->manager_id);
                     FcmHelper::send(
                         $manager->fcm_token,
-                        'Dokumen Menunggu Persetujuan',
-                        "Dokumen '{$document->title}' telah disetujui super admin. Menunggu persetujuan Anda sebagai manajer.",
+                        'Dokumentasi Menunggu Persetujuan',
+                        "Dokumentasi '{$document->title}' telah disetujui super admin. Menunggu persetujuan Anda sebagai manajer.",
                         [
-                            'reference_type' => 'document',
+                            'reference_type' => 'document_approve',
                             'reference_id' => (string) $document->id,
                         ]
                     );
 
                     Notification::create([
                         'user_id' => $document->user_id,
-                        'title' => 'Dokumen Disetujui oleh Super Admin',
-                        'message' => "Dokumen '{$document->title}' disetujui super admin. Menunggu persetujuan manajer.",
-                        'reference_type' => 'document',
+                        'title' => 'Dokumentasi Disetujui oleh Super Admin',
+                        'message' => "Dokumentasi '{$document->title}' disetujui super admin. Menunggu persetujuan manajer.",
+                        'reference_type' => 'document_view',
                         'reference_id' => $document->id,
                     ]);
                     FcmHelper::send(
                         $uploader->fcm_token,
-                        'Dokumen Disetujui oleh Super Admin',
-                        "Dokumen '{$document->title}' disetujui super admin. Menunggu persetujuan manajer.",
+                        'Dokumentasi Disetujui oleh Super Admin',
+                        "Dokumentasi '{$document->title}' disetujui super admin. Menunggu persetujuan manajer.",
                         [
                             'reference_type' => 'document',
                             'reference_id' => (string) $document->id,
@@ -763,17 +756,17 @@ class DocumentController extends Controller
                 $document->update(['status' => 'approved']);
                 Notification::create([
                     'user_id' => $document->user_id,
-                    'title' => 'Dokumen Disetujui',
-                    'message' => "Dokumen '{$document->title}' telah disetujui dan dipublikasikan.",
-                    'reference_type' => 'document',
+                    'title' => 'Dokumentasi Disetujui',
+                    'message' => "Dokumentasi '{$document->title}' telah disetujui dan dipublikasikan.",
+                    'reference_type' => 'document_view',
                     'reference_id' => $document->id,
                 ]);
                 FcmHelper::send(
                     $uploader->fcm_token,
-                    'Dokumen Disetujui',
-                    "Dokumen '{$document->title}' telah disetujui dan dipublikasikan.",
+                    'Dokumentasi Disetujui',
+                    "Dokumentasi '{$document->title}' telah disetujui dan dipublikasikan.",
                     [
-                        'reference_type' => 'document',
+                        'reference_type' => 'document_view',
                         'reference_id' => (string) $document->id,
                     ]
                 );
@@ -782,17 +775,17 @@ class DocumentController extends Controller
             $document = $document->fresh(['user', 'category', 'documentApprovals.approver']);
 
             return response()->json([
-                'message' => 'Dokumen berhasil disetujui',
+                'message' => 'Dokumentasi berhasil disetujui',
                 'data' => $document,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
-                'message' => 'Dokumen atau persetujuan tidak ditemukan',
+                'message' => 'Dokumentasi atau persetujuan tidak ditemukan',
                 'error' => 'Resource not found',
             ], 404);
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'Gagal menyetujui dokumen',
+                'message' => 'Gagal menyetujui Dokumentasi',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -813,14 +806,14 @@ class DocumentController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="comments", type="string", example="Dokumen tidak sesuai")
+     *             @OA\Property(property="comments", type="string", example="Dokumentasi tidak sesuai")
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Document rejected successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Dokumen berhasil ditolak")
+     *             @OA\Property(property="message", type="string", example="Dokumentasi berhasil ditolak")
      *         )
      *     ),
      *     @OA\Response(
@@ -842,7 +835,7 @@ class DocumentController extends Controller
      *         response=404,
      *         description="Document or approval not found",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Dokumen atau persetujuan tidak ditemukan")
+     *             @OA\Property(property="message", type="string", example="Dokumentasi atau persetujuan tidak ditemukan")
      *         )
      *     )
      * )
@@ -859,10 +852,10 @@ class DocumentController extends Controller
             $user = Auth::user();
 
             if ($user->role === 'super_admin' && $document->status !== 'pending_super_admin') {
-                return response()->json(['message' => 'Dokumen tidak dalam status pending_super_admin'], 400);
+                return response()->json(['message' => 'Dokumentasi tidak dalam status pending_super_admin'], 400);
             }
             if ($user->role === 'manager' && ($document->status !== 'pending_manager' || $document->manager_id !== $user->id)) {
-                return response()->json(['message' => 'Dokumen tidak dalam status pending_manager atau Anda bukan manajer'], 400);
+                return response()->json(['message' => 'Dokumentasi tidak dalam status pending_manager atau Anda bukan manajer'], 400);
             }
 
             $approval = DocumentApproval::where('document_id', $id)
@@ -877,18 +870,18 @@ class DocumentController extends Controller
             $document->update(['status' => 'rejected']);
             Notification::create([
                 'user_id' => $document->user_id,
-                'title' => 'Dokumen Ditolak',
-                'message' => "Dokumen '{$document->title}' ditolak oleh {$user->name}. Alasan: {$request->comments}.",
-                'reference_type' => 'document',
+                'title' => 'Dokumentasi Ditolak',
+                'message' => "Dokumentasi '{$document->title}' ditolak oleh {$user->name}. Alasan: {$request->comments}.",
+                'reference_type' => 'document_view',
                 'reference_id' => $document->id,
             ]);
             $uploader = User::find($document->user_id);
             FcmHelper::send(
                 $uploader->fcm_token,
-                'Dokumen Ditolak',
-                "Dokumen '{$document->title}' ditolak oleh {$user->name}. Alasan: {$request->comments}.",
+                'Dokumentasi Ditolak',
+                "Dokumentasi '{$document->title}' ditolak oleh {$user->name}. Alasan: {$request->comments}.",
                 [
-                    'reference_type' => 'document',
+                    'reference_type' => 'document_view',
                     'reference_id' => (string) $document->id,
                 ]
             );
@@ -896,7 +889,7 @@ class DocumentController extends Controller
             $document = $document->fresh(['user', 'category', 'documentApprovals.approver']);
 
             return response()->json([
-                'message' => 'Dokumen berhasil ditolak',
+                'message' => 'Dokumentasi berhasil ditolak',
                 'data' => $document,
             ]);
         } catch (ValidationException $e) {
@@ -906,12 +899,12 @@ class DocumentController extends Controller
             ], 422);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
-                'message' => 'Dokumen atau persetujuan tidak ditemukan',
+                'message' => 'Dokumentasi atau persetujuan tidak ditemukan',
                 'error' => 'Resource not found',
             ], 404);
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'Gagal menolak dokumen',
+                'message' => 'Gagal menolak Dokumentasi',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -961,7 +954,7 @@ class DocumentController extends Controller
      *         response=404,
      *         description="Document not found",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Dokumen tidak ditemukan")
+     *             @OA\Property(property="message", type="string", example="Dokumentasi tidak ditemukan")
      *         )
      *     )
      * )
@@ -988,20 +981,20 @@ class DocumentController extends Controller
 
             Notification::create([
                 'user_id' => $document->user_id,
-                'title' => 'Pembaruan Dokumen Diperlukan',
-                'message' => "Manajer meminta pembaruan untuk '{$document->title}'. Alasan: {$request->comments}.",
-                'reference_type' => 'document',
-                'reference_id' => $document->id,
+                'title' => 'Pembaruan Dokumentasi Diperlukan',
+                'message' => "Manajer meminta pembaruan untuk '{$document->category->name}'. Alasan: {$request->comments}.",
+                'reference_type' => 'document_update_request',
+                'reference_id' => $document->category->id,
             ]);
 
             $uploader = User::find($document->user_id);
             FcmHelper::send(
                 $uploader->fcm_token,
-                'Pembaruan Dokumen Diperlukan',
+                'Pembaruan Dokumentasi Diperlukan',
                 "Manajer meminta pembaruan untuk '{$document->title}'. Alasan: {$request->comments}.",
                 [
-                    'reference_type' => 'document',
-                    'reference_id' => (string) $document->id,
+                    'reference_type' => 'document_update_request',
+                    'reference_id' => (string) $document->category->id,
                 ]
             );
 
@@ -1013,7 +1006,7 @@ class DocumentController extends Controller
             ], 422);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
-                'message' => 'Dokumen tidak ditemukan',
+                'message' => 'Dokumentasi tidak ditemukan',
                 'error' => 'Document not found',
             ], 404);
         } catch (Exception $e) {
@@ -1041,7 +1034,7 @@ class DocumentController extends Controller
      *         response=200,
      *         description="Submissions retrieved successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Pengajuan dokumen berhasil diambil"),
+     *             @OA\Property(property="message", type="string", example="Pengajuan Dokumentasi berhasil diambil"),
      *             @OA\Property(
      *                 property="submissions",
      *                 type="array",
@@ -1064,7 +1057,7 @@ class DocumentController extends Controller
      *                             type="object",
      *                             @OA\Property(property="approver_id", type="integer"),
      *                             @OA\Property(property="status", type="string", example="pending"),
-     *                             @OA\Property(property="comments", type="string", example="Dokumen perlu revisi", nullable=true),
+     *                             @OA\Property(property="comments", type="string", example="Dokumentasi perlu revisi", nullable=true),
      *                             @OA\Property(property="approver", type="object", @OA\Property(property="name", type="string"))
      *                         )
      *                     )
@@ -1076,7 +1069,7 @@ class DocumentController extends Controller
      *         response=500,
      *         description="Server error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Gagal mengambil pengajuan dokumen"),
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil pengajuan Dokumentasi"),
      *             @OA\Property(property="error", type="string")
      *         )
      *     )
@@ -1087,7 +1080,7 @@ class DocumentController extends Controller
         try {
             $user = Auth::user();
             $query = Document::with(['category', 'documentApprovals.approver'])
-                ->withTrashed() // Sertakan dokumen yang di-soft-delete
+                ->withTrashed() // Sertakan Dokumentasi yang di-soft-delete
                 ->where('user_id', $user->id);
 
             if ($request->has('status')) {
@@ -1097,12 +1090,12 @@ class DocumentController extends Controller
             $submissions = $query->get();
 
             return response()->json([
-                'message' => 'Pengajuan dokumen berhasil diambil',
+                'message' => 'Pengajuan Dokumentasi berhasil diambil',
                 'data' => $submissions,
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'Gagal mengambil pengajuan dokumen',
+                'message' => 'Gagal mengambil pengajuan Dokumentasi',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -1129,7 +1122,7 @@ class DocumentController extends Controller
      *         response=200,
      *         description="Document deleted successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Dokumen berhasil dihapus")
+     *             @OA\Property(property="message", type="string", example="Dokumentasi berhasil dihapus")
      *         )
      *     ),
      *     @OA\Response(
@@ -1143,14 +1136,14 @@ class DocumentController extends Controller
      *         response=404,
      *         description="Document not found",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Dokumen tidak ditemukan")
+     *             @OA\Property(property="message", type="string", example="Dokumentasi tidak ditemukan")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
      *         description="Server error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Gagal menghapus dokumen"),
+     *             @OA\Property(property="message", type="string", example="Gagal menghapus Dokumentasi"),
      *             @OA\Property(property="error", type="string")
      *         )
      *     )
@@ -1172,11 +1165,11 @@ class DocumentController extends Controller
                 Storage::disk('public')->delete($document->file_path);
             }
 
-            // Ubah status dokumen menjadi DELETED
+            // Ubah status Dokumentasi menjadi DELETED
             $document->status = 'DELETED';
             $document->save();
 
-            // Soft delete dokumen
+            // Soft delete Dokumentasi
             $document->delete();
 
             // Ubah status DocumentApproval untuk super admin yang menghapus menjadi DELETED
@@ -1184,39 +1177,39 @@ class DocumentController extends Controller
                 ->where('approver_id', $user->id)
                 ->update(['status' => 'DELETED']);
 
-            // Kirim notifikasi ke pemilik dokumen
+            // Kirim notifikasi ke pemilik Dokumentasi
             $uploader = User::find($document->user_id);
             if ($uploader) {
                 Notification::create([
                     'user_id' => $document->user_id,
-                    'title' => 'Dokumen Dihapus',
-                    'message' => "Dokumen '{$document->title}' telah dihapus oleh super admin.",
-                    'reference_type' => 'document',
+                    'title' => 'Dokumentasi Dihapus',
+                    'message' => "Dokumentasi '{$document->title}' telah dihapus oleh super admin.",
+                    'reference_type' => 'document_view',
                     'reference_id' => $document->id,
                 ]);
 
                 FcmHelper::send(
                     $uploader->fcm_token,
-                    'Dokumen Dihapus',
-                    "Dokumen '{$document->title}' telah dihapus oleh super admin.",
+                    'Dokumentasi Dihapus',
+                    "Dokumentasi '{$document->title}' telah dihapus oleh super admin.",
                     [
-                        'reference_type' => 'document',
+                        'reference_type' => 'document_view',
                         'reference_id' => (string) $document->id,
                     ]
                 );
             }
 
             return response()->json([
-                'message' => 'Dokumen berhasil dihapus',
+                'message' => 'Dokumentasi berhasil dihapus',
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
-                'message' => 'Dokumen tidak ditemukan',
+                'message' => 'Dokumentasi tidak ditemukan',
                 'error' => 'Document not found',
             ], 404);
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'Gagal menghapus dokumen',
+                'message' => 'Gagal menghapus Dokumentasi',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -1243,7 +1236,7 @@ class DocumentController extends Controller
      *         response=200,
      *         description="Documents deleted successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Semua dokumen pada kategori berhasil dihapus")
+     *             @OA\Property(property="message", type="string", example="Semua Dokumentasi pada kategori berhasil dihapus")
      *         )
      *     ),
      *     @OA\Response(
@@ -1271,7 +1264,7 @@ class DocumentController extends Controller
      *         response=500,
      *         description="Server error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Gagal menghapus dokumen"),
+     *             @OA\Property(property="message", type="string", example="Gagal menghapus Dokumentasi"),
      *             @OA\Property(property="error", type="string")
      *         )
      *     )
@@ -1297,10 +1290,10 @@ class DocumentController extends Controller
                 ], 400);
             }
 
-            // Ambil semua dokumen di kategori
+            // Ambil semua Dokumentasi di kategori
             $documents = Document::where('category_id', $category_id)->get();
 
-            // Proses setiap dokumen
+            // Proses setiap Dokumentasi
             foreach ($documents as $document) {
                 // Hapus file
                 if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
@@ -1311,7 +1304,7 @@ class DocumentController extends Controller
                 $document->status = 'DELETED';
                 $document->save();
 
-                // Soft delete dokumen
+                // Soft delete Dokumentasi
                 $document->delete();
 
                 // Ubah status DocumentApproval untuk super admin yang menghapus menjadi DELETED
@@ -1319,23 +1312,23 @@ class DocumentController extends Controller
                     ->where('approver_id', $user->id)
                     ->update(['status' => 'DELETED']);
 
-                // Kirim notifikasi ke pemilik dokumen
+                // Kirim notifikasi ke pemilik Dokumentasi
                 $uploader = User::find($document->user_id);
                 if ($uploader) {
                     Notification::create([
                         'user_id' => $document->user_id,
-                        'title' => 'Dokumen Dihapus',
-                        'message' => "Dokumen '{$document->title}' dalam kategori '{$category->name}' telah dihapus oleh super admin.",
-                        'reference_type' => 'document',
+                        'title' => 'Dokumentasi Dihapus',
+                        'message' => "Dokumentasi '{$document->title}' dalam kategori '{$category->name}' telah dihapus oleh super admin.",
+                        'reference_type' => 'document_view',
                         'reference_id' => $document->id,
                     ]);
 
                     FcmHelper::send(
                         $uploader->fcm_token,
-                        'Dokumen Dihapus',
-                        "Dokumen '{$document->title}' dalam kategori '{$category->name}' telah dihapus oleh super admin.",
+                        'Dokumentasi Dihapus',
+                        "Dokumentasi '{$document->title}' dalam kategori '{$category->name}' telah dihapus oleh super admin.",
                         [
-                            'reference_type' => 'document',
+                            'reference_type' => 'document_view',
                             'reference_id' => (string) $document->id,
                         ]
                     );
@@ -1343,7 +1336,7 @@ class DocumentController extends Controller
             }
 
             return response()->json([
-                'message' => 'Semua dokumen pada kategori berhasil dihapus',
+                'message' => 'Semua Dokumentasi pada kategori berhasil dihapus',
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -1352,7 +1345,7 @@ class DocumentController extends Controller
             ], 404);
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'Gagal menghapus dokumen',
+                'message' => 'Gagal menghapus Dokumentasi',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -1392,7 +1385,7 @@ class DocumentController extends Controller
     public function getAssessmentProgress(Request $request)
     {
         try {
-            // Daftar sub-kriteria per tingkat berdasarkan dokumen
+            // Daftar sub-kriteria per tingkat berdasarkan Dokumentasi
             $initialPoints = [
                 '1.1.1',
                 '1.1.3',
@@ -1573,7 +1566,7 @@ class DocumentController extends Controller
             $totalTransition = count($transitionPoints);
             $totalAdvanced = count($advancedPoints);
 
-            // Ambil sub-kriteria yang terpenuhi (ada dokumen approved di kategori terkait)
+            // Ambil sub-kriteria yang terpenuhi (ada Dokumentasi approved di kategori terkait)
             $fulfilledInitial = Category::whereIn('code', $initialPoints)
                 ->whereHas('documents', function ($query) {
                     $query->where('status', 'approved')->whereNull('deleted_at');
@@ -1627,6 +1620,248 @@ class DocumentController extends Controller
             return response()->json([
                 'message' => 'Gagal mengambil progres penilaian',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Download all approved documents as a ZIP file with category hierarchy.
+     *
+     * @OA\Get(
+     *     path="/api/documents/download-all",
+     *     operationId="downloadAllDocuments",
+     *     tags={"Documents"},
+     *     summary="Download all approved documents in a ZIP file",
+     *     description="Downloads all approved documents in a ZIP file named 'documentation-YYYYMMDDHHMMSS.zip', organized in a folder structure based on category hierarchy with code prefixes (e.g., '1.1 Kebijakan K3'). Only accessible to super_admin.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="ZIP file downloaded successfully",
+     *         @OA\MediaType(
+     *             mediaType="application/zip",
+     *             @OA\Schema(type="string", format="binary")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="No approved documents found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Tidak ada Dokumentasi yang tersedia untuk diunduh")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal mengunduh Dokumentasi"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function downloadAllZip(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            // Hanya super_admin yang dapat mengakses
+            if ($user->role !== 'super_admin') {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            // Ambil semua Dokumentasi approved dengan kategori
+            $documents = Document::with(['category.parent.parent'])
+                ->where('status', 'approved')
+                ->whereNull('deleted_at')
+                ->get();
+
+            if ($documents->isEmpty()) {
+                return response()->json([
+                    'message' => 'Tidak ada Dokumentasi yang tersedia untuk diunduh',
+                ], 404);
+            }
+
+            // Buat instance ZipArchive
+            $zip = new \ZipArchive();
+            $timestamp = now()->format('YmdHis'); // Format: YYYYMMDDHHMMSS
+            $zipFileName = "documentation-{$timestamp}.zip";
+            $zipFilePath = storage_path('app/temp/' . $zipFileName);
+
+            // Pastikan direktori temp ada
+            if (!file_exists(storage_path('app/temp'))) {
+                mkdir(storage_path('app/temp'), 0755, true);
+            }
+
+            if ($zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                return response()->json([
+                    'message' => 'Gagal membuat file ZIP',
+                    'error' => 'Cannot open ZIP archive',
+                ], 500);
+            }
+
+            // Tambahkan Dokumentasi ke ZIP dengan struktur folder
+            foreach ($documents as $document) {
+                if (!$document->category || !$document->category->parent || !$document->category->parent->parent) {
+                    continue; // Lewati jika hierarki kategori tidak lengkap
+                }
+
+                // Ambil kode dan nama kategori untuk Level 1, Level 2, Level 3
+                $level1Name = Str::slug("{$document->category->parent->parent->code} {$document->category->parent->parent->name}");
+                $level2Name = Str::slug("{$document->category->parent->code} {$document->category->parent->name}");
+                $level3Name = Str::slug("{$document->category->code} {$document->category->name}");
+
+                // Path di dalam ZIP
+                $zipPath = "{$level1Name}/{$level2Name}/{$level3Name}/" . basename($document->file_path);
+
+                // Pastikan file ada di storage
+                $filePath = storage_path('app/public/' . $document->file_path);
+                if (file_exists($filePath)) {
+                    $zip->addFile($filePath, $zipPath);
+                }
+            }
+
+            $zip->close();
+
+            // Periksa apakah ZIP berhasil dibuat
+            if (!file_exists($zipFilePath)) {
+                return response()->json([
+                    'message' => 'Gagal membuat file ZIP',
+                    'error' => 'ZIP file not created',
+                ], 500);
+            }
+
+            // Unduh file ZIP
+            return response()->download($zipFilePath, $zipFileName, [
+                'Content-Type' => 'application/zip',
+            ])->deleteFileAfterSend(true);
+        } catch (Exception $e) {
+            Log::error('Download all documents error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'message' => 'Gagal mengunduh Dokumentasi',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete all document files and set their status to DELETED.
+     *
+     * @OA\Delete(
+     *     path="/api/documents/delete-all",
+     *     operationId="deleteAllDocuments",
+     *     tags={"Documents"},
+     *     summary="Delete all document files and set status to DELETED",
+     *     description="Deletes all document files from the server, sets their status to DELETED, and soft deletes them. Only accessible to super_admin. Sends notifications to document owners. Records remain in the database.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="All documents deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Semua Dokumentasi berhasil dihapus")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="No documents found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Tidak ada Dokumentasi yang tersedia untuk dihapus")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal menghapus Dokumentasi"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function deleteAll(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            // Hanya super_admin yang dapat mengakses
+            if ($user->role !== 'super_admin') {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            // Ambil semua Dokumentasi
+            $documents = Document::withTrashed()->get();
+
+            if ($documents->isEmpty()) {
+                return response()->json([
+                    'message' => 'Tidak ada Dokumentasi yang tersedia untuk dihapus',
+                ], 404);
+            }
+
+            // Proses setiap Dokumentasi
+            foreach ($documents as $document) {
+                // Hapus file dari penyimpanan
+                if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
+                    Storage::disk('public')->delete($document->file_path);
+                }
+
+                // Ubah status Dokumentasi menjadi DELETED
+                $document->status = 'DELETED';
+                $document->save();
+
+                // Soft delete Dokumentasi
+                if (!$document->trashed()) {
+                    $document->delete();
+                }
+
+                // Ubah status DocumentApproval untuk super admin yang menghapus menjadi DELETED
+                DocumentApproval::where('document_id', $document->id)
+                    ->where('approver_id', $user->id)
+                    ->update(['status' => 'DELETED']);
+
+                // Kirim notifikasi ke pemilik Dokumentasi
+                $uploader = User::find($document->user_id);
+                if ($uploader) {
+                    Notification::create([
+                        'user_id' => $document->user_id,
+                        'title' => 'Dokumentasi Dihapus',
+                        'message' => "Dokumentasi '{$document->title}' telah dihapus oleh super admin.",
+                        'reference_type' => 'document_view',
+                        'reference_id' => $document->id,
+                    ]);
+
+                    FcmHelper::send(
+                        $uploader->fcm_token,
+                        'Dokumentasi Dihapus',
+                        "Dokumentasi '{$document->title}' telah dihapus oleh super admin.",
+                        [
+                            'reference_type' => 'document_view',
+                            'reference_id' => (string) $document->id,
+                        ]
+                    );
+                }
+            }
+
+            return response()->json([
+                'message' => 'Semua Dokumentasi berhasil dihapus',
+            ], 200);
+        } catch (Exception $e) {
+            Log::error('Delete all documents error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'message' => 'Gagal menghapus Dokumentasi',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

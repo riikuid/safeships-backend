@@ -443,7 +443,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Dokumen berhasil diambil"
+                                            "example": "Dokumentasi berhasil diambil"
                                         },
                                         "data": {
                                             "type": "array",
@@ -490,7 +490,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Gagal mengambil dokumen"
+                                            "example": "Gagal mengambil Dokumentasi"
                                         },
                                         "error": {
                                             "type": "string"
@@ -534,7 +534,7 @@
                                     },
                                     "description": {
                                         "type": "string",
-                                        "example": "Dokumen pelatihan"
+                                        "example": "Dokumentasi pelatihan"
                                     },
                                     "file": {
                                         "type": "string",
@@ -555,7 +555,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Dokumen berhasil diunggah, menunggu persetujuan"
+                                            "example": "Dokumentasi berhasil diunggah, menunggu persetujuan"
                                         },
                                         "document": {
                                             "properties": {
@@ -661,7 +661,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Dokumen berhasil diambil"
+                                            "example": "Dokumentasi berhasil diambil"
                                         },
                                         "data": {
                                             "type": "array",
@@ -708,7 +708,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Gagal mengambil dokumen"
+                                            "example": "Gagal mengambil Dokumentasi"
                                         },
                                         "error": {
                                             "type": "string"
@@ -756,7 +756,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Berhasil mendapatkan dokumen pada kategori level 2: Kebijakan K3"
+                                            "example": "Berhasil mendapatkan Dokumentasi pada kategori level 2: Kebijakan K3"
                                         },
                                         "data": {
                                             "type": "array",
@@ -784,7 +784,7 @@
                                                                 },
                                                                 "title": {
                                                                     "type": "string",
-                                                                    "example": "Dokumen Kebijakan K3 2023"
+                                                                    "example": "Dokumentasi Kebijakan K3 2023"
                                                                 },
                                                                 "file_path": {
                                                                     "type": "string",
@@ -792,7 +792,7 @@
                                                                 },
                                                                 "description": {
                                                                     "type": "string",
-                                                                    "example": "Dokumen resmi kebijakan K3 tahun 2023"
+                                                                    "example": "Dokumentasi resmi kebijakan K3 tahun 2023"
                                                                 }
                                                             },
                                                             "type": "object"
@@ -897,7 +897,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Dokumen berhasil diambil"
+                                            "example": "Dokumentasi berhasil diambil"
                                         },
                                         "data": {
                                             "properties": {
@@ -957,7 +957,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Dokumen tidak ditemukan"
+                                            "example": "Dokumentasi tidak ditemukan"
                                         }
                                     },
                                     "type": "object"
@@ -999,7 +999,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Dokumen berhasil disetujui"
+                                            "example": "Dokumentasi berhasil disetujui"
                                         }
                                     },
                                     "type": "object"
@@ -1046,7 +1046,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Dokumen atau persetujuan tidak ditemukan"
+                                            "example": "Dokumentasi atau persetujuan tidak ditemukan"
                                         }
                                     },
                                     "type": "object"
@@ -1087,7 +1087,7 @@
                                 "properties": {
                                     "comments": {
                                         "type": "string",
-                                        "example": "Dokumen tidak sesuai"
+                                        "example": "Dokumentasi tidak sesuai"
                                     }
                                 },
                                 "type": "object"
@@ -1104,7 +1104,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Dokumen berhasil ditolak"
+                                            "example": "Dokumentasi berhasil ditolak"
                                         }
                                     },
                                     "type": "object"
@@ -1154,7 +1154,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Dokumen atau persetujuan tidak ditemukan"
+                                            "example": "Dokumentasi atau persetujuan tidak ditemukan"
                                         }
                                     },
                                     "type": "object"
@@ -1263,7 +1263,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Dokumen tidak ditemukan"
+                                            "example": "Dokumentasi tidak ditemukan"
                                         }
                                     },
                                     "type": "object"
@@ -1312,7 +1312,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Pengajuan dokumen berhasil diambil"
+                                            "example": "Pengajuan Dokumentasi berhasil diambil"
                                         },
                                         "submissions": {
                                             "type": "array",
@@ -1357,7 +1357,7 @@
                                                                 },
                                                                 "comments": {
                                                                     "type": "string",
-                                                                    "example": "Dokumen perlu revisi",
+                                                                    "example": "Dokumentasi perlu revisi",
                                                                     "nullable": true
                                                                 },
                                                                 "approver": {
@@ -1390,7 +1390,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Gagal mengambil pengajuan dokumen"
+                                            "example": "Gagal mengambil pengajuan Dokumentasi"
                                         },
                                         "error": {
                                             "type": "string"
@@ -1438,7 +1438,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Dokumen berhasil dihapus"
+                                            "example": "Dokumentasi berhasil dihapus"
                                         }
                                     },
                                     "type": "object"
@@ -1470,7 +1470,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Dokumen tidak ditemukan"
+                                            "example": "Dokumentasi tidak ditemukan"
                                         }
                                     },
                                     "type": "object"
@@ -1486,7 +1486,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Gagal menghapus dokumen"
+                                            "example": "Gagal menghapus Dokumentasi"
                                         },
                                         "error": {
                                             "type": "string"
@@ -1534,7 +1534,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Semua dokumen pada kategori berhasil dihapus"
+                                            "example": "Semua Dokumentasi pada kategori berhasil dihapus"
                                         }
                                     },
                                     "type": "object"
@@ -1598,7 +1598,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Gagal menghapus dokumen"
+                                            "example": "Gagal menghapus Dokumentasi"
                                         },
                                         "error": {
                                             "type": "string"
@@ -1659,6 +1659,169 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Gagal mengambil progres penilaian"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/documents/download-all": {
+            "get": {
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Download all approved documents in a ZIP file",
+                "description": "Downloads all approved documents in a ZIP file named 'documentation-YYYYMMDDHHMMSS.zip', organized in a folder structure based on category hierarchy with code prefixes (e.g., '1.1 Kebijakan K3'). Only accessible to super_admin.",
+                "operationId": "downloadAllDocuments",
+                "responses": {
+                    "200": {
+                        "description": "ZIP file downloaded successfully",
+                        "content": {
+                            "application/zip": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No approved documents found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tidak ada Dokumentasi yang tersedia untuk diunduh"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengunduh Dokumentasi"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/documents/delete-all": {
+            "delete": {
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Delete all document files and set status to DELETED",
+                "description": "Deletes all document files from the server, sets their status to DELETED, and soft deletes them. Only accessible to super_admin. Sends notifications to document owners. Records remain in the database.",
+                "operationId": "deleteAllDocuments",
+                "responses": {
+                    "200": {
+                        "description": "All documents deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Semua Dokumentasi berhasil dihapus"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No documents found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tidak ada Dokumentasi yang tersedia untuk dihapus"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal menghapus Dokumentasi"
                                         },
                                         "error": {
                                             "type": "string"
@@ -1787,12 +1950,110 @@
                 ]
             }
         },
+        "/api/notifications/test": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Tes pengiriman notifikasi FCM ke diri sendiri (user login)",
+                "operationId": "c941cde059e3360e6c7ed97f4e8a5999",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "body"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Tes Notifikasi"
+                                    },
+                                    "body": {
+                                        "type": "string",
+                                        "example": "Ini adalah pesan notifikasi uji coba."
+                                    },
+                                    "data": {
+                                        "type": "object",
+                                        "example": {
+                                            "custom_key": "custom_value"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Notifikasi berhasil dikirim",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tes notifikasi berhasil dikirim"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Tidak terautentikasi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan server",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengirim notifikasi"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Some error detail"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/safety-patrols": {
             "get": {
                 "tags": [
-                    "SafetyPatrols"
+                    "Safety Patrol"
                 ],
-                "summary": "Get list of safety patrol reports",
+                "summary": "Get list of safety patrols",
                 "operationId": "8111238c7ba2a06576033697e4646e8a",
                 "parameters": [
                     {
@@ -1806,7 +2067,6 @@
                                 "pending_super_admin",
                                 "pending_manager",
                                 "pending_action",
-                                "action_in_progress",
                                 "pending_feedback_approval",
                                 "done",
                                 "rejected"
@@ -1816,7 +2076,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Reports retrieved successfully",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1828,18 +2088,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "location": {
-                                                        "type": "string"
-                                                    },
-                                                    "status": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                "type": "object"
+                                                "$ref": "#/components/schemas/SafetyPatrolModel"
                                             }
                                         }
                                     },
@@ -1848,24 +2097,8 @@
                             }
                         }
                     },
-                    "403": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
                     "500": {
-                        "description": "Server error",
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1873,6 +2106,9 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Gagal mengambil laporan"
+                                        },
+                                        "error": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -1889,7 +2125,7 @@
             },
             "post": {
                 "tags": [
-                    "SafetyPatrols"
+                    "Safety Patrol"
                 ],
                 "summary": "Create a new safety patrol report",
                 "operationId": "55ed694c4c3ec5c4d50fd2ac201c7e5f",
@@ -1900,19 +2136,23 @@
                             "schema": {
                                 "properties": {
                                     "manager_id": {
+                                        "description": "ID of the manager",
                                         "type": "integer",
                                         "example": 2
                                     },
                                     "report_date": {
+                                        "description": "Date of the report",
                                         "type": "string",
                                         "format": "date",
-                                        "example": "2025-05-19"
+                                        "example": "2025-05-20"
                                     },
                                     "image": {
+                                        "description": "Image file (max 5MB)",
                                         "type": "string",
                                         "format": "binary"
                                     },
                                     "type": {
+                                        "description": "Type of report",
                                         "type": "string",
                                         "enum": [
                                             "condition",
@@ -1921,12 +2161,14 @@
                                         "example": "condition"
                                     },
                                     "description": {
+                                        "description": "Description of the issue",
                                         "type": "string",
-                                        "example": "Peralatan rusak di area produksi"
+                                        "example": "Unsafe condition detected"
                                     },
                                     "location": {
+                                        "description": "Location of the issue (max 255 characters)",
                                         "type": "string",
-                                        "example": "Gudang Utama"
+                                        "example": "Warehouse A"
                                     }
                                 },
                                 "type": "object"
@@ -1936,7 +2178,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Safety patrol report created successfully",
+                        "description": "Report created successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1946,18 +2188,7 @@
                                             "example": "Laporan safety patrol berhasil dibuat"
                                         },
                                         "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer"
-                                                },
-                                                "report_date": {
-                                                    "type": "string"
-                                                },
-                                                "status": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "type": "object"
+                                            "$ref": "#/components/schemas/SafetyPatrolModel"
                                         }
                                     },
                                     "type": "object"
@@ -1985,7 +2216,7 @@
                         }
                     },
                     "500": {
-                        "description": "Server error",
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2014,14 +2245,15 @@
         "/api/safety-patrols/{id}/detail": {
             "get": {
                 "tags": [
-                    "SafetyPatrols"
+                    "Safety Patrol"
                 ],
-                "summary": "Get a specific safety patrol report",
+                "summary": "Get details of a specific safety patrol",
                 "operationId": "7a86fd67f4cbb52eda5ac9aa134aec09",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID of the safety patrol",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2030,7 +2262,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Report retrieved successfully",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2040,18 +2272,7 @@
                                             "example": "Laporan berhasil diambil"
                                         },
                                         "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer"
-                                                },
-                                                "location": {
-                                                    "type": "string"
-                                                },
-                                                "status": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "type": "object"
+                                            "$ref": "#/components/schemas/SafetyPatrolModel"
                                         }
                                     },
                                     "type": "object"
@@ -2084,6 +2305,25 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Laporan tidak ditemukan"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengambil laporan"
+                                        },
+                                        "error": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -2102,7 +2342,7 @@
         "/api/safety-patrols/{id}/approve": {
             "post": {
                 "tags": [
-                    "SafetyPatrols"
+                    "Safety Patrol"
                 ],
                 "summary": "Approve a safety patrol report",
                 "operationId": "1eb1924f1fd210a93f157a5c0533d05d",
@@ -2110,6 +2350,7 @@
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID of the safety patrol",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2117,21 +2358,21 @@
                     }
                 ],
                 "requestBody": {
-                    "required": true,
+                    "required": false,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "properties": {
                                     "actor_id": {
-                                        "description": "Required for manager approval to assign an actor",
+                                        "description": "ID of the actor (required for manager)",
                                         "type": "integer",
-                                        "example": 3
+                                        "example": 4
                                     },
                                     "deadline": {
-                                        "description": "Required for manager approval",
+                                        "description": "Deadline for action (required for manager)",
                                         "type": "string",
                                         "format": "date",
-                                        "example": "2025-06-01"
+                                        "example": "2025-05-25"
                                     }
                                 },
                                 "type": "object"
@@ -2149,6 +2390,9 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Laporan berhasil disetujui"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/SafetyPatrolModel"
                                         }
                                     },
                                     "type": "object"
@@ -2163,7 +2407,24 @@
                                 "schema": {
                                     "properties": {
                                         "message": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Laporan tidak dalam status pending_super_admin"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Report or approval not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Laporan atau persetujuan tidak ditemukan"
                                         }
                                     },
                                     "type": "object"
@@ -2180,6 +2441,9 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Validasi gagal"
+                                        },
+                                        "errors": {
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -2187,15 +2451,18 @@
                             }
                         }
                     },
-                    "404": {
-                        "description": "Report not found",
+                    "500": {
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Laporan tidak ditemukan"
+                                            "example": "Gagal menyetujui laporan"
+                                        },
+                                        "error": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -2214,7 +2481,7 @@
         "/api/safety-patrols/{id}/reject": {
             "post": {
                 "tags": [
-                    "SafetyPatrols"
+                    "Safety Patrol"
                 ],
                 "summary": "Reject a safety patrol report",
                 "operationId": "327e750d25788dd144c3df470348a5a1",
@@ -2222,6 +2489,7 @@
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID of the safety patrol",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2235,8 +2503,9 @@
                             "schema": {
                                 "properties": {
                                     "comments": {
+                                        "description": "Reason for rejection",
                                         "type": "string",
-                                        "example": "Laporan tidak lengkap"
+                                        "example": "Insufficient evidence"
                                     }
                                 },
                                 "type": "object"
@@ -2254,6 +2523,9 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Laporan berhasil ditolak"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/SafetyPatrolModel"
                                         }
                                     },
                                     "type": "object"
@@ -2268,7 +2540,24 @@
                                 "schema": {
                                     "properties": {
                                         "message": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Laporan tidak dalam status pending_super_admin"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Report or approval not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Laporan atau persetujuan tidak ditemukan"
                                         }
                                     },
                                     "type": "object"
@@ -2285,6 +2574,9 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Validasi gagal"
+                                        },
+                                        "errors": {
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -2292,15 +2584,18 @@
                             }
                         }
                     },
-                    "404": {
-                        "description": "Report not found",
+                    "500": {
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Laporan tidak ditemukan"
+                                            "example": "Gagal menolak laporan"
+                                        },
+                                        "error": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -2319,7 +2614,7 @@
         "/api/safety-patrols/{id}/submit-feedback": {
             "post": {
                 "tags": [
-                    "SafetyPatrols"
+                    "Safety Patrol"
                 ],
                 "summary": "Submit feedback for a safety patrol report",
                 "operationId": "d7dd47f4bfc8dacd20bf42854540c06b",
@@ -2327,6 +2622,7 @@
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID of the safety patrol",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2340,17 +2636,20 @@
                             "schema": {
                                 "properties": {
                                     "feedback_date": {
+                                        "description": "Date of the feedback",
                                         "type": "string",
                                         "format": "date",
-                                        "example": "2025-05-25"
+                                        "example": "2025-05-22"
                                     },
                                     "image": {
+                                        "description": "Feedback image (max 5MB)",
                                         "type": "string",
                                         "format": "binary"
                                     },
                                     "description": {
+                                        "description": "Description of the feedback",
                                         "type": "string",
-                                        "example": "Peralatan telah diperbaiki"
+                                        "example": "Action taken"
                                     }
                                 },
                                 "type": "object"
@@ -2368,6 +2667,9 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Feedback berhasil diunggah"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/SafetyPatrolModel"
                                         }
                                     },
                                     "type": "object"
@@ -2384,22 +2686,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validasi gagal"
                                         }
                                     },
                                     "type": "object"
@@ -2422,6 +2708,44 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validasi gagal"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengunggah feedback"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -2434,14 +2758,15 @@
         "/api/safety-patrols/feedback/{id}/approve": {
             "post": {
                 "tags": [
-                    "SafetyPatrols"
+                    "Safety Patrol"
                 ],
-                "summary": "Approve a safety patrol feedback",
+                "summary": "Approve feedback for a safety patrol report",
                 "operationId": "ce62abd6f7306d1ce5c84c064ecbf7a3",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID of the feedback",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2458,6 +2783,9 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Feedback berhasil disetujui"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/SafetyPatrolModel"
                                         }
                                     },
                                     "type": "object"
@@ -2465,14 +2793,15 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Invalid status or role",
+                    "403": {
+                        "description": "Unauthorized",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Unauthorized"
                                         }
                                     },
                                     "type": "object"
@@ -2481,14 +2810,33 @@
                         }
                     },
                     "404": {
-                        "description": "Feedback not found",
+                        "description": "Feedback or approval not found",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Feedback tidak ditemukan"
+                                            "example": "Feedback atau persetujuan tidak ditemukan"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal menyetujui feedback"
+                                        },
+                                        "error": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -2507,14 +2855,15 @@
         "/api/safety-patrols/feedback/{id}/reject": {
             "post": {
                 "tags": [
-                    "SafetyPatrols"
+                    "Safety Patrol"
                 ],
-                "summary": "Reject a safety patrol feedback",
+                "summary": "Reject feedback for a safety patrol report",
                 "operationId": "0a8c570bfcd4132e6da60d85fe1488f8",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID of the feedback",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2528,8 +2877,9 @@
                             "schema": {
                                 "properties": {
                                     "comments": {
+                                        "description": "Reason for rejection",
                                         "type": "string",
-                                        "example": "Feedback tidak memadai"
+                                        "example": "Feedback not clear"
                                     }
                                 },
                                 "type": "object"
@@ -2547,6 +2897,9 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Feedback berhasil ditolak"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/SafetyPatrolModel"
                                         }
                                     },
                                     "type": "object"
@@ -2554,14 +2907,31 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Invalid status or role",
+                    "403": {
+                        "description": "Unauthorized",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Feedback or approval not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Feedback atau persetujuan tidak ditemukan"
                                         }
                                     },
                                     "type": "object"
@@ -2578,6 +2948,9 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Validasi gagal"
+                                        },
+                                        "errors": {
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -2585,15 +2958,18 @@
                             }
                         }
                     },
-                    "404": {
-                        "description": "Feedback not found",
+                    "500": {
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Feedback tidak ditemukan"
+                                            "example": "Gagal menolak feedback"
+                                        },
+                                        "error": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -2612,9 +2988,9 @@
         "/api/safety-patrols/my-submissions": {
             "get": {
                 "tags": [
-                    "SafetyPatrols"
+                    "Safety Patrol"
                 ],
-                "summary": "Get user's safety patrol submissions",
+                "summary": "Get list of user's submitted safety patrols",
                 "operationId": "fb0a58ac03d87a79faa3723228923b7f",
                 "parameters": [
                     {
@@ -2628,7 +3004,6 @@
                                 "pending_super_admin",
                                 "pending_manager",
                                 "pending_action",
-                                "action_in_progress",
                                 "pending_feedback_approval",
                                 "done",
                                 "rejected"
@@ -2638,7 +3013,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Submissions retrieved successfully",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2650,18 +3025,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "location": {
-                                                        "type": "string"
-                                                    },
-                                                    "status": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                "type": "object"
+                                                "$ref": "#/components/schemas/SafetyPatrolModel"
                                             }
                                         }
                                     },
@@ -2671,7 +3035,7 @@
                         }
                     },
                     "500": {
-                        "description": "Server error",
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2679,6 +3043,9 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Gagal mengambil laporan"
+                                        },
+                                        "error": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -2697,9 +3064,9 @@
         "/api/safety-patrols/managerial": {
             "get": {
                 "tags": [
-                    "SafetyPatrols"
+                    "Safety Patrol"
                 ],
-                "summary": "Get safety patrol reports for managerial roles",
+                "summary": "Get list of safety patrols for managerial roles",
                 "operationId": "c5ad08d04a46221bfcd553cda20572ff",
                 "parameters": [
                     {
@@ -2713,7 +3080,6 @@
                                 "pending_super_admin",
                                 "pending_manager",
                                 "pending_action",
-                                "action_in_progress",
                                 "pending_feedback_approval",
                                 "done",
                                 "rejected"
@@ -2723,7 +3089,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Reports retrieved successfully",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2735,30 +3101,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "type": {
-                                                        "type": "string"
-                                                    },
-                                                    "location": {
-                                                        "type": "string"
-                                                    },
-                                                    "description": {
-                                                        "type": "string"
-                                                    },
-                                                    "status": {
-                                                        "type": "string"
-                                                    },
-                                                    "created_at": {
-                                                        "type": "string"
-                                                    },
-                                                    "user_approval_status": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                "type": "object"
+                                                "$ref": "#/components/schemas/SafetyPatrolCardModel"
                                             }
                                         }
                                     },
@@ -2784,7 +3127,7 @@
                         }
                     },
                     "500": {
-                        "description": "Server error",
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2792,6 +3135,9 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Gagal mengambil laporan"
+                                        },
+                                        "error": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -2810,9 +3156,9 @@
         "/api/safety-patrols/my-actions": {
             "get": {
                 "tags": [
-                    "SafetyPatrols"
+                    "Safety Patrol"
                 ],
-                "summary": "Get safety patrol tasks assigned to the user as an actor",
+                "summary": "Get list of safety patrols assigned to user as actor",
                 "operationId": "be634c48463966a135116e14942b560e",
                 "parameters": [
                     {
@@ -2823,8 +3169,9 @@
                         "schema": {
                             "type": "string",
                             "enum": [
+                                "pending_super_admin",
+                                "pending_manager",
                                 "pending_action",
-                                "action_in_progress",
                                 "pending_feedback_approval",
                                 "done",
                                 "rejected"
@@ -2834,7 +3181,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Tasks retrieved successfully",
+                        "description": "Successful operation",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2846,22 +3193,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer"
-                                                    },
-                                                    "location": {
-                                                        "type": "string"
-                                                    },
-                                                    "status": {
-                                                        "type": "string"
-                                                    },
-                                                    "deadline": {
-                                                        "type": "string",
-                                                        "format": "date"
-                                                    }
-                                                },
-                                                "type": "object"
+                                                "$ref": "#/components/schemas/SafetyPatrolCardModel"
                                             }
                                         }
                                     },
@@ -2871,7 +3203,7 @@
                         }
                     },
                     "500": {
-                        "description": "Server error",
+                        "description": "Internal server error",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2879,6 +3211,9 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Gagal mengambil tugas"
+                                        },
+                                        "error": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -2897,14 +3232,15 @@
         "/api/safety-patrols/{id}": {
             "delete": {
                 "tags": [
-                    "SafetyPatrols"
+                    "Safety Patrol"
                 ],
-                "summary": "Delete a safety patrol report",
+                "summary": "Delete a safety patrol report (soft delete)",
                 "operationId": "2336d7222f5a76edeb4e8ce151984136",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID of the safety patrol",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2953,6 +3289,138 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Laporan tidak ditemukan"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal menghapus laporan"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/safety-patrols/report-data": {
+            "get": {
+                "tags": [
+                    "Safety Patrol"
+                ],
+                "summary": "Get safety patrol report data for charts",
+                "operationId": "5aca6f0041ea1dfdd175c5b883bea947",
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "description": "Optional year to get monthly data (e.g., 2025). If not provided, returns yearly data for the previous 5 years.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data laporan berhasil diambil"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "labels": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "2021"
+                                                    }
+                                                },
+                                                "datasets": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "label": {
+                                                                "type": "string",
+                                                                "example": "Unsafe Condition"
+                                                            },
+                                                            "data": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "integer",
+                                                                    "example": 10
+                                                                }
+                                                            },
+                                                            "backgroundColor": {
+                                                                "type": "string",
+                                                                "example": "#ff6384"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tahun tidak valid"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengambil data laporan"
+                                        },
+                                        "error": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -3996,14 +4464,353 @@
             }
         }
     },
+    "components": {
+        "schemas": {
+            "SafetyPatrolModel": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "manager_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "report_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-05-20"
+                    },
+                    "image_path": {
+                        "type": "string",
+                        "example": "safety_patrols/20250520114900_location.jpg"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "condition",
+                            "unsafe_action"
+                        ],
+                        "example": "condition"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Unsafe condition detected"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example": "Warehouse A"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending_super_admin",
+                            "pending_manager",
+                            "pending_action",
+                            "pending_feedback_approval",
+                            "done",
+                            "rejected"
+                        ],
+                        "example": "pending_super_admin"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-05-20T23:49:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-05-20T23:49:00Z"
+                    },
+                    "deleted_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "user": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "John Doe"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "manager": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 2
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Jane Manager"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "approvals": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": 1
+                                },
+                                "safety_patrol_id": {
+                                    "type": "integer",
+                                    "example": 1
+                                },
+                                "approver_id": {
+                                    "type": "integer",
+                                    "example": 3
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "pending",
+                                        "approved",
+                                        "rejected"
+                                    ],
+                                    "example": "pending"
+                                },
+                                "approved_at": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "example": null,
+                                    "nullable": true
+                                },
+                                "comments": {
+                                    "type": "string",
+                                    "example": "Not sufficient",
+                                    "nullable": true
+                                },
+                                "approver": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 3
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Super Admin"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "action": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "safety_patrol_id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "actor_id": {
+                                "type": "integer",
+                                "example": 4
+                            },
+                            "deadline": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2025-05-25"
+                            },
+                            "actor": {
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 4
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Action User"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "feedbacks": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": 1
+                                },
+                                "safety_patrol_id": {
+                                    "type": "integer",
+                                    "example": 1
+                                },
+                                "actor_id": {
+                                    "type": "integer",
+                                    "example": 4
+                                },
+                                "feedback_date": {
+                                    "type": "string",
+                                    "format": "date",
+                                    "example": "2025-05-22"
+                                },
+                                "image_path": {
+                                    "type": "string",
+                                    "example": "safety_patrol_feedbacks/20250522114900_feedback.jpg"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "example": "Action taken"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "pending",
+                                        "approved",
+                                        "rejected"
+                                    ],
+                                    "example": "pending"
+                                },
+                                "approvals": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "feedback_id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "approver_id": {
+                                                "type": "integer",
+                                                "example": 3
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "pending",
+                                                    "approved",
+                                                    "rejected"
+                                                ],
+                                                "example": "pending"
+                                            },
+                                            "approved_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": null,
+                                                "nullable": true
+                                            },
+                                            "comments": {
+                                                "type": "string",
+                                                "example": "Feedback not clear",
+                                                "nullable": true
+                                            },
+                                            "approver": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Super Admin"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "SafetyPatrolCardModel": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "condition",
+                            "unsafe_action"
+                        ],
+                        "example": "condition"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example": "Warehouse A"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Unsafe condition detected"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending_super_admin",
+                            "pending_manager",
+                            "pending_action",
+                            "pending_feedback_approval",
+                            "done",
+                            "rejected"
+                        ],
+                        "example": "pending_super_admin"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-05-20T23:49:00Z"
+                    },
+                    "user_approval_status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "approved",
+                            "rejected"
+                        ],
+                        "example": "pending"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "apiKey",
+                "description": "Enter token in format \"Bearer {token}\"",
+                "name": "Authorization",
+                "in": "header"
+            }
+        }
+    },
     "tags": [
         {
             "name": "Documents",
             "description": "API Endpoints for managing documents"
-        },
-        {
-            "name": "SafetyPatrols",
-            "description": "API Endpoints for managing safety patrol reports"
         },
         {
             "name": "Users",
@@ -4020,18 +4827,12 @@
         {
             "name": "Notifications",
             "description": "Notifications"
+        },
+        {
+            "name": "Safety Patrol",
+            "description": "Safety Patrol"
         }
     ],
-    "components": {
-        "securitySchemes": {
-            "sanctum": {
-                "type": "apiKey",
-                "description": "Enter token in format \"Bearer {token}\"",
-                "name": "Authorization",
-                "in": "header"
-            }
-        }
-    },
     "security": [
         {
             "sanctum": []

@@ -23,6 +23,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // DOKUMENTASI K3
     Route::name('documents.')->prefix('documents')->group(function () {
         Route::get('/assessment-progress', [DocumentController::class, 'getAssessmentProgress']);
+        Route::get('/download-all', [DocumentController::class, 'downloadAllZip']);
+        Route::delete('/delete-all', [DocumentController::class, 'deleteAll']);
         Route::post('/', [DocumentController::class, 'store']);
         Route::get('/', [DocumentController::class, 'index']);
         Route::get('/managerial', [DocumentController::class, 'documentsManagerial']);
@@ -41,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::name('safety-patrols.')->prefix('safety-patrols')->group(function () {
         Route::post('/', [SafetyPatrolController::class, 'store'])->name('store');
         Route::get('/', [SafetyPatrolController::class, 'index'])->name('index');
+        Route::get('/report-data', [SafetyPatrolController::class, 'reportData'])->name('report-data');
         Route::get('/managerial', [SafetyPatrolController::class, 'managerial'])->name('managerial')->middleware('role:super_admin,manager');
         Route::get('/my-submissions', [SafetyPatrolController::class, 'mySubmissions'])->name('my-submissions');
         Route::get('/my-actions', [SafetyPatrolController::class, 'myActions'])->name('my-actions');
@@ -65,4 +68,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('{id}/reset-password', [UserController::class, 'resetPassword']);
     });
     Route::get('notifications', [NotificationController::class, 'index']);
+    Route::post('notifications/test', [NotificationController::class, 'test']);
 });

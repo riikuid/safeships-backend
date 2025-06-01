@@ -1551,6 +1551,8 @@ class SafetyPatrolController extends Controller
                 $unsafeConditionData = array_fill(0, 12, 0);
                 $unsafeActionData = array_fill(0, 12, 0);
 
+
+
                 foreach ($data as $row) {
                     $monthIndex = $row->month - 1;
                     $unsafeConditionData[$monthIndex] = (int) ($row->unsafe_condition ?? 0);
@@ -1596,6 +1598,27 @@ class SafetyPatrolController extends Controller
                 $labels = array_map('strval', $labels);
                 $unsafeConditionData = array_fill(0, 5, 0);
                 $unsafeActionData = array_fill(0, 5, 0);
+
+                if ($data->isEmpty()) {
+                    return response()->json([
+                        'message' => 'Tidak ada data yang dilaporkan pada periode tersebut',
+                        'data' => [
+                            'labels' => $year ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] : array_map('strval', range($startYear, $currentYear)),
+                            'datasets' => [
+                                [
+                                    'label' => 'Unsafe Condition',
+                                    'data' => array_fill(0, $year ? 12 : 5, 0),
+                                    'backgroundColor' => '#ff6384',
+                                ],
+                                [
+                                    'label' => 'Unsafe Action',
+                                    'data' => array_fill(0, $year ? 12 : 5, 0),
+                                    'backgroundColor' => '#36a2eb',
+                                ],
+                            ],
+                        ],
+                    ]);
+                }
 
                 foreach ($data as $row) {
                     $yearIndex = $row->year - $startYear;

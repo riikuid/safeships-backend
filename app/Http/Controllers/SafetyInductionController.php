@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Schema(
@@ -572,6 +573,17 @@ class SafetyInductionController extends Controller
                 return response()->json(['message' => 'Pengajuan sudah selesai'], 400);
             }
 
+            // Validasi question_package_id berdasarkan jumlah attempt
+            $attemptCount = $induction->attempts()->count();
+            $questionPackageId = $request->input('question_package_id');
+            $easyPackage = QuestionPackage::where('type', 'easy')->first();
+
+            if ($attemptCount >= 1 && $questionPackageId != $easyPackage->id) {
+                return response()->json(['message' => 'Paket soal harus easy untuk attempt kedua atau lebih'], 400);
+            } elseif ($attemptCount == 0 && $questionPackageId == $easyPackage->id) {
+                return response()->json(['message' => 'Paket soal easy hanya untuk attempt kedua atau lebih'], 400);
+            }
+
             $answers = $request->input('answers');
             $questions = Question::whereIn('id', array_column($answers, 'question_id'))->get();
             $correctCount = 0;
@@ -588,7 +600,7 @@ class SafetyInductionController extends Controller
 
             $attempt = SafetyInductionAttempt::create([
                 'safety_induction_id' => $id,
-                'question_package_id' => $request->input('question_package_id'),
+                'question_package_id' => $questionPackageId,
                 'score' => $score,
                 'passed' => $passed,
                 'attempt_date' => now(),
@@ -612,23 +624,23 @@ class SafetyInductionController extends Controller
 
                 $responseData['certificate'] = $certificate;
 
-                Notification::create([
-                    'user_id' => $user->id,
-                    'title' => 'Tes Safety Induction Lulus',
-                    'message' => 'Selamat, Anda lulus tes safety induction! Sertifikat telah diterbitkan.',
-                    'reference_type' => 'safety_induction_view',
-                    'reference_id' => $induction->id,
-                ]);
+                // Notification::create([
+                //     'user_id' => $user->id,
+                //     'title' => 'Tes Safety Induction Lulus',
+                //     'message' => 'Selamat, Anda lulus tes safety induction! Sertifikat telah diterbitkan.',
+                //     'reference_type' => 'safety_induction_view',
+                //     'reference_id' => $induction->id,
+                // ]);
 
-                FcmHelper::send(
-                    $user->fcm_token,
-                    'Tes Safety Induction Lulus',
-                    'Selamat, Anda lulus tes safety induction! Sertifikat telah diterbitkan.',
-                    [
-                        'reference_type' => 'safety_induction_view',
-                        'reference_id' => (string) $induction->id,
-                    ]
-                );
+                // FcmHelper::send(
+                //     $user->fcm_token,
+                //     'Tes Safety Induction Lulus',
+                //     'Selamat, Anda lulus tes safety induction! Sertifikat telah diterbitkan.',
+                //     [
+                //         'reference_type' => 'safety_induction_view',
+                //         'reference_id' => (string) $induction->id,
+                //     ]
+                // );
             } else {
                 // Notification::create([
                 //     'user_id' => $user->id,
@@ -663,6 +675,7 @@ class SafetyInductionController extends Controller
                 'message' => 'Pengajuan tidak ditemukan',
             ], 404);
         } catch (Exception $e) {
+            Log::error('Error submitting answers: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Gagal memproses jawaban',
                 'error' => $e->getMessage(),

@@ -60,6 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::name('safety-inductions.')->prefix('safety-inductions')->group(function () {
         Route::get('/locations', [SafetyInductionController::class, 'getLocations']);
         Route::post('/', [SafetyInductionController::class, 'store']);
+        Route::get('/{id}/fail', [SafetyInductionController::class, 'markAsFailed']);
         Route::get('/{id}/questions', [SafetyInductionController::class, 'getQuestions']);
         Route::post('/{id}/submit-answers', [SafetyInductionController::class, 'submitAnswers']);
         Route::get('/{id}/result', [SafetyInductionController::class, 'getResult']);

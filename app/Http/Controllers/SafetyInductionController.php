@@ -144,7 +144,8 @@ class SafetyInductionController extends Controller
      *             @OA\Property(property="type", type="string", enum={"karyawan", "mahasiswa", "tamu", "kontraktor"}, example="karyawan"),
      *             @OA\Property(property="address", type="string", example="Jl. Contoh No. 123"),
      *             @OA\Property(property="phone_number", type="string", example="081234567890"),
-     *             @OA\Property(property="email", type="string", example="john@example.com")
+     *             @OA\Property(property="email", type="string", example="john@example.com"),
+     *             @OA\Property(property="force_create", type="boolean", example=false)
      *         )
      *     ),
      *     @OA\Response(
@@ -153,6 +154,19 @@ class SafetyInductionController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Pengajuan safety induction berhasil dibuat"),
      *             @OA\Property(property="data", ref="#/components/schemas/SafetyInductionModel")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=409,
+     *         description="Pending submission exists",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Anda masih memiliki pengajuan yang belum selesai"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="pending_submission", ref="#/components/schemas/SafetyInductionModel"),
+     *                 @OA\Property(property="options", type="array", @OA\Items(type="string", example="Buat Pengajuan Baru"))
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -182,10 +196,31 @@ class SafetyInductionController extends Controller
                 'address' => 'nullable|string',
                 'phone_number' => 'nullable|string|max:20',
                 'email' => 'nullable|email',
+                'force_create' => 'sometimes|boolean',
             ]);
 
+            $user = Auth::user();
+            $pendingSubmission = SafetyInduction::where('user_id', $user->id)
+                ->where('status', 'pending')
+                ->first();
+
+            if ($pendingSubmission && !$request->input('force_create', false)) {
+                return response()->json([
+                    'message' => 'Anda masih memiliki pengajuan yang belum selesai',
+                    'data' => [
+                        'pending_submission' => $pendingSubmission->load(['user', 'attempts', 'certificate']),
+                        'options' => ['Buat Pengajuan Baru', 'Lanjutkan Pengajuan Sebelumnya'],
+                    ],
+                ], 409);
+            }
+
+            // If force_create is true, delete the existing pending submission
+            if ($pendingSubmission && $request->input('force_create', false)) {
+                $pendingSubmission->delete();
+            }
+
             $induction = SafetyInduction::create([
-                'user_id' => Auth::id(),
+                'user_id' => $user->id,
                 'name' => $request->name,
                 'type' => $request->type,
                 'address' => $request->address,
@@ -195,7 +230,7 @@ class SafetyInductionController extends Controller
             ]);
 
             // Notification::create([
-            //     'user_id' => Auth::id(),
+            //     'user_id' => $user->id,
             //     'title' => 'Pengajuan Safety Induction',
             //     'message' => 'Pengajuan safety induction Anda telah dibuat. Silakan lanjutkan ke tes.',
             //     'reference_type' => 'safety_induction',
@@ -203,7 +238,7 @@ class SafetyInductionController extends Controller
             // ]);
 
             // FcmHelper::send(
-            //     Auth::user()->fcm_token,
+            //     $user->fcm_token,
             //     'Pengajuan Safety Induction',
             //     'Pengajuan safety induction Anda telah dibuat. Silakan lanjutkan ke tes.',
             //     [
@@ -340,6 +375,101 @@ class SafetyInductionController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Gagal mengambil soal',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Mark a safety induction as failed
+     *
+     * @OA\Post(
+     *     path="/api/safety-inductions/{id}/fail",
+     *     summary="Mark a safety induction as failed",
+     *     tags={"Safety Induction"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the safety induction",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Induction marked as failed",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Pengajuan telah ditandai sebagai gagal")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Induction not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Pengajuan tidak ditemukan")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal menandai pengajuan sebagai gagal"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function markAsFailed($id)
+    {
+        try {
+            $induction = SafetyInduction::findOrFail($id);
+            $user = Auth::user();
+
+            if ($induction->user_id !== $user->id) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            if ($induction->status !== 'pending') {
+                return response()->json(['message' => 'Pengajuan sudah selesai'], 400);
+            }
+
+            $induction->update(['status' => 'failed']);
+
+            Notification::create([
+                'user_id' => $user->id,
+                'title' => 'Pengajuan Safety Induction Gagal',
+                'message' => 'Pengajuan safety induction Anda telah ditandai sebagai gagal.',
+                'reference_type' => 'safety_induction',
+                'reference_id' => $induction->id,
+            ]);
+
+            FcmHelper::send(
+                $user->fcm_token,
+                'Pengajuan Safety Induction Gagal',
+                'Pengajuan safety induction Anda telah ditandai sebagai gagal.',
+                [
+                    'reference_type' => 'safety_induction',
+                    'reference_id' => (string) $induction->id,
+                ]
+            );
+
+            return response()->json([
+                'message' => 'Pengajuan telah ditandai sebagai gagal',
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Pengajuan tidak ditemukan',
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Gagal menandai pengajuan sebagai gagal',
                 'error' => $e->getMessage(),
             ], 500);
         }

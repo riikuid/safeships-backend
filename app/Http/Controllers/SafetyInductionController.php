@@ -194,23 +194,23 @@ class SafetyInductionController extends Controller
                 'status' => 'pending',
             ]);
 
-            Notification::create([
-                'user_id' => Auth::id(),
-                'title' => 'Pengajuan Safety Induction',
-                'message' => 'Pengajuan safety induction Anda telah dibuat. Silakan lanjutkan ke tes.',
-                'reference_type' => 'safety_induction',
-                'reference_id' => $induction->id,
-            ]);
+            // Notification::create([
+            //     'user_id' => Auth::id(),
+            //     'title' => 'Pengajuan Safety Induction',
+            //     'message' => 'Pengajuan safety induction Anda telah dibuat. Silakan lanjutkan ke tes.',
+            //     'reference_type' => 'safety_induction',
+            //     'reference_id' => $induction->id,
+            // ]);
 
-            FcmHelper::send(
-                Auth::user()->fcm_token,
-                'Pengajuan Safety Induction',
-                'Pengajuan safety induction Anda telah dibuat. Silakan lanjutkan ke tes.',
-                [
-                    'reference_type' => 'safety_induction',
-                    'reference_id' => (string) $induction->id,
-                ]
-            );
+            // FcmHelper::send(
+            //     Auth::user()->fcm_token,
+            //     'Pengajuan Safety Induction',
+            //     'Pengajuan safety induction Anda telah dibuat. Silakan lanjutkan ke tes.',
+            //     [
+            //         'reference_type' => 'safety_induction',
+            //         'reference_id' => (string) $induction->id,
+            //     ]
+            // );
 
             return response()->json([
                 'message' => 'Pengajuan safety induction berhasil dibuat',
@@ -486,7 +486,7 @@ class SafetyInductionController extends Controller
                     'user_id' => $user->id,
                     'title' => 'Tes Safety Induction Lulus',
                     'message' => 'Selamat, Anda lulus tes safety induction! Sertifikat telah diterbitkan.',
-                    'reference_type' => 'safety_induction',
+                    'reference_type' => 'safety_induction_view',
                     'reference_id' => $induction->id,
                 ]);
 
@@ -495,28 +495,28 @@ class SafetyInductionController extends Controller
                     'Tes Safety Induction Lulus',
                     'Selamat, Anda lulus tes safety induction! Sertifikat telah diterbitkan.',
                     [
-                        'reference_type' => 'safety_induction',
+                        'reference_type' => 'safety_induction_view',
                         'reference_id' => (string) $induction->id,
                     ]
                 );
             } else {
-                Notification::create([
-                    'user_id' => $user->id,
-                    'title' => 'Tes Safety Induction Gagal',
-                    'message' => 'Nilai Anda kurang dari 80. Silakan coba lagi.',
-                    'reference_type' => 'safety_induction',
-                    'reference_id' => $induction->id,
-                ]);
+                // Notification::create([
+                //     'user_id' => $user->id,
+                //     'title' => 'Tes Safety Induction Gagal',
+                //     'message' => 'Nilai Anda kurang dari 80. Silakan coba lagi.',
+                //     'reference_type' => 'safety_induction',
+                //     'reference_id' => $induction->id,
+                // ]);
 
-                FcmHelper::send(
-                    $user->fcm_token,
-                    'Tes Safety Induction Gagal',
-                    'Nilai Anda kurang dari 80. Silakan coba lagi.',
-                    [
-                        'reference_type' => 'safety_induction',
-                        'reference_id' => (string) $induction->id,
-                    ]
-                );
+                // FcmHelper::send(
+                //     $user->fcm_token,
+                //     'Tes Safety Induction Gagal',
+                //     'Nilai Anda kurang dari 80. Silakan coba lagi.',
+                //     [
+                //         'reference_type' => 'safety_induction',
+                //         'reference_id' => (string) $induction->id,
+                //     ]
+                // );
             }
 
             return response()->json([

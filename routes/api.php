@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\SafetyInductionController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\NotificationController;
@@ -56,6 +57,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [SafetyPatrolController::class, 'destroy'])->name('destroy')->middleware('role:super_admin');
     });
 
+    Route::name('safety-inductions.')->prefix('safety-patrols')->group(function () {
+        Route::get('/locations', [SafetyInductionController::class, 'getLocations']);
+        Route::post('/', [SafetyInductionController::class, 'store']);
+        Route::get('/{id}/questions', [SafetyInductionController::class, 'getQuestions']);
+        Route::post('/{id}/submit-answers', [SafetyInductionController::class, 'submitAnswers']);
+        Route::get('/{id}/result', [SafetyInductionController::class, 'getResult']);
+        Route::get('/{id}/certificate', [SafetyInductionController::class, 'getCertificate']);
+        Route::get('/my-submissions', [SafetyInductionController::class, 'mySubmissions']);
+    });
+
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->middleware('role:super_admin,manager');
         Route::put('/update-profile', [UserController::class, 'updateProfile']);
@@ -67,6 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('{id}', [UserController::class, 'destroy'])->middleware('role:super_admin');
         Route::put('{id}/reset-password', [UserController::class, 'resetPassword']);
     });
+
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::post('notifications/test', [NotificationController::class, 'test']);
 });

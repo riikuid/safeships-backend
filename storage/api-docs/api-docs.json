@@ -2048,6 +2048,764 @@
                 ]
             }
         },
+        "/api/safety-inductions/locations": {
+            "get": {
+                "tags": [
+                    "Safety Induction"
+                ],
+                "summary": "Get list of locations with YouTube URLs",
+                "description": "Get list of locations",
+                "operationId": "26ed1f7a2a1e5da34a61f93d21e44fc7",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Daftar lokasi berhasil diambil"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Warehouse A"
+                                                    },
+                                                    "youtube_url": {
+                                                        "type": "string",
+                                                        "example": "https://youtube.com/watch?v=abc123"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengambil daftar lokasi"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/safety-inductions": {
+            "post": {
+                "tags": [
+                    "Safety Induction"
+                ],
+                "summary": "Create a new safety induction request",
+                "description": "Create a new safety induction request",
+                "operationId": "f1a273d59770d4dc89d3474cbfa93a34",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "karyawan",
+                                            "mahasiswa",
+                                            "tamu",
+                                            "kontraktor"
+                                        ],
+                                        "example": "karyawan"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Jl. Contoh No. 123"
+                                    },
+                                    "phone_number": {
+                                        "type": "string",
+                                        "example": "081234567890"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "john@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Request created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pengajuan safety induction berhasil dibuat"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/SafetyInductionModel"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validasi gagal"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal membuat pengajuan"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/safety-inductions/{id}/questions": {
+            "get": {
+                "tags": [
+                    "Safety Induction"
+                ],
+                "summary": "Get questions for a safety induction test",
+                "description": "Get questions for a safety induction test",
+                "operationId": "03b1718c66c2c372a30af922046e3a48",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the safety induction",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Soal berhasil diambil"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "package": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "Paket A"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "questions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/QuestionModel"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Induction not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pengajuan tidak ditemukan"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pengajuan sudah selesai"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengambil soal"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/safety-inductions/{id}/submit-answers": {
+            "post": {
+                "tags": [
+                    "Safety Induction"
+                ],
+                "summary": "Submit answers for a safety induction test",
+                "description": "Submit answers for a safety induction test",
+                "operationId": "9c6bed4835f5fc58531df7369177bf94",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the safety induction",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "question_package_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "answers": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "question_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "selected_answer": {
+                                                    "type": "string",
+                                                    "example": "A"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Answers submitted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Jawaban berhasil disubmit"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "attempt": {
+                                                    "$ref": "#/components/schemas/SafetyInductionAttemptModel"
+                                                },
+                                                "can_retry": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "certificate": {
+                                                    "oneOf": [
+                                                        {
+                                                            "$ref": "#/components/schemas/CertificateModel"
+                                                        }
+                                                    ],
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Induction not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pengajuan tidak ditemukan"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validasi gagal"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal memproses jawaban"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/safety-inductions/{id}/result": {
+            "get": {
+                "tags": [
+                    "Safety Induction"
+                ],
+                "summary": "Get result of a safety induction",
+                "description": "Get result of a safety induction",
+                "operationId": "4651ade889e396fde18cbe7bcfd18689",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the safety induction",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Hasil tes berhasil diambil"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "induction": {
+                                                    "$ref": "#/components/schemas/SafetyInductionModel"
+                                                },
+                                                "attempts": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/SafetyInductionAttemptModel"
+                                                    }
+                                                },
+                                                "certificate": {
+                                                    "oneOf": [
+                                                        {
+                                                            "$ref": "#/components/schemas/CertificateModel"
+                                                        }
+                                                    ],
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Induction not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pengajuan tidak ditemukan"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengambil hasil"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/safety-inductions/{id}/certificate": {
+            "get": {
+                "tags": [
+                    "Safety Induction"
+                ],
+                "summary": "Get certificate of a safety induction",
+                "description": "Get certificate of a safety induction",
+                "operationId": "86a1a65d1096e8ebca919df1d6f6ea07",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the safety induction",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sertifikat berhasil diambil"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/CertificateModel"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Induction or certificate not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sertifikat tidak ditemukan"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengambil sertifikat"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/safety-inductions/my-submissions": {
+            "get": {
+                "tags": [
+                    "Safety Induction"
+                ],
+                "summary": "Get user's safety induction submissions",
+                "description": "Get user's safety induction submissions",
+                "operationId": "6e983a190554d4ea9c093dc49a34c921",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pengajuan berhasil diambil"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SafetyInductionModel"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengambil pengajuan"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/safety-patrols": {
             "get": {
                 "tags": [
@@ -4466,6 +5224,171 @@
     },
     "components": {
         "schemas": {
+            "SafetyInductionModel": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "karyawan"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Jl. Contoh No. 123"
+                    },
+                    "phone_number": {
+                        "type": "string",
+                        "example": "081234567890"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "john@example.com"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "SafetyInductionAttemptModel": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "safety_induction_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "question_package_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "score": {
+                        "type": "integer",
+                        "example": 70
+                    },
+                    "passed": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "attempt_date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "CertificateModel": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "safety_induction_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "issued_date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "expired_date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "url": {
+                        "type": "string",
+                        "example": "certificates/safety_induction_1_20250602184800.pdf"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "QuestionModel": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "question_package_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "text": {
+                        "type": "string",
+                        "example": "Apa prosedur keselamatan?"
+                    },
+                    "options": {
+                        "properties": {
+                            "A": {
+                                "type": "string",
+                                "example": "Memakai helm"
+                            },
+                            "B": {
+                                "type": "string",
+                                "example": "Berlari"
+                            },
+                            "C": {
+                                "type": "string",
+                                "example": "Abaikan tanda"
+                            },
+                            "D": {
+                                "type": "string",
+                                "example": "Tanpa APD"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "SafetyPatrolModel": {
                 "properties": {
                     "id": {
@@ -4827,6 +5750,10 @@
         {
             "name": "Notifications",
             "description": "Notifications"
+        },
+        {
+            "name": "Safety Induction",
+            "description": "Safety Induction"
         },
         {
             "name": "Safety Patrol",

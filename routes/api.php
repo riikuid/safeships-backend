@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\SafetyInductionController;
+use App\Http\Controllers\SafetyInductionController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\NotificationController;

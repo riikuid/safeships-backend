@@ -57,7 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [SafetyPatrolController::class, 'destroy'])->name('destroy')->middleware('role:super_admin');
     });
 
-    Route::name('safety-inductions.')->prefix('safety-patrols')->group(function () {
+    Route::name('safety-inductions.')->prefix('safety-inductions')->group(function () {
         Route::get('/locations', [SafetyInductionController::class, 'getLocations']);
         Route::post('/', [SafetyInductionController::class, 'store']);
         Route::get('/{id}/questions', [SafetyInductionController::class, 'getQuestions']);

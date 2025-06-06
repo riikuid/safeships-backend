@@ -944,25 +944,26 @@ class SafetyInductionController extends Controller
             color: #000;
             font-family: 'Helvetica';
         }
-        .name {
-            font-size: 30px;
-            margin-top: 300px; /* Nama di tengah vertikal */
+       .name {
+            font-size: 58px;
+            font-weight: bold;
+            margin-top: 528px; /* Nama di tengah vertikal */
         }
         .issued-date {
-            font-size: 18px;
-            margin-top: 380px; /* Tanggal penerbitan di bawah nama */
+            font-size: 24px;
+            margin-top: 198px; /* Tanggal penerbitan di bawah nama */
         }
         .expired-date {
-            font-size: 18px;
-            margin-top: 410px; /* Tanggal kadaluarsa di bawah tanggal penerbitan */
+            font-size: 24px;
+            margin-top: 88px; /* Tanggal kadaluarsa di bawah tanggal penerbitan */
         }
     </style>
 </head>
 <body>
     <div class="text-overlay">
         <div class="name">$simplifiedName</div>
-        <div class="issued-date">Issued on: $issuedDate</div>
-        <div class="expired-date">Expires on: $expiredDate</div>
+        <div class="issued-date">$issuedDate</div>
+        <div class="expired-date">$expiredDate</div>
     </div>
 </body>
 </html>

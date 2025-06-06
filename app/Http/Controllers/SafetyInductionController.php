@@ -443,23 +443,23 @@ class SafetyInductionController extends Controller
 
             $induction->update(['status' => 'failed']);
 
-            Notification::create([
-                'user_id' => $user->id,
-                'title' => 'Pengajuan Safety Induction Gagal',
-                'message' => 'Pengajuan safety induction Anda telah ditandai sebagai gagal.',
-                'reference_type' => 'safety_induction',
-                'reference_id' => $induction->id,
-            ]);
+            // Notification::create([
+            //     'user_id' => $user->id,
+            //     'title' => 'Pengajuan Safety Induction Gagal',
+            //     'message' => 'Pengajuan safety induction Anda telah ditandai sebagai gagal.',
+            //     'reference_type' => 'safety_induction',
+            //     'reference_id' => $induction->id,
+            // ]);
 
-            FcmHelper::send(
-                $user->fcm_token,
-                'Pengajuan Safety Induction Gagal',
-                'Pengajuan safety induction Anda telah ditandai sebagai gagal.',
-                [
-                    'reference_type' => 'safety_induction',
-                    'reference_id' => (string) $induction->id,
-                ]
-            );
+            // FcmHelper::send(
+            //     $user->fcm_token,
+            //     'Pengajuan Safety Induction Gagal',
+            //     'Pengajuan safety induction Anda telah ditandai sebagai gagal.',
+            //     [
+            //         'reference_type' => 'safety_induction',
+            //         'reference_id' => (string) $induction->id,
+            //     ]
+            // );
 
             return response()->json([
                 'message' => 'Pengajuan telah ditandai sebagai gagal',
@@ -748,11 +748,7 @@ class SafetyInductionController extends Controller
 
             return response()->json([
                 'message' => 'Hasil tes berhasil diambil',
-                'data' => [
-                    'induction' => $induction,
-                    'attempts' => $induction->attempts,
-                    'certificate' => $induction->certificate,
-                ],
+                'data' => $induction,
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -896,17 +892,250 @@ class SafetyInductionController extends Controller
      * @param SafetyInduction $induction
      * @return string
      */
+
     protected function generateCertificate(SafetyInduction $induction)
     {
-        $pdf = Pdf::loadView('pdf.certificates.safety_induction', [
-            'user' => $induction->user,
-            'induction' => $induction,
-            'issued_date' => now()->format('Y-m-d'),
-        ]);
+        try {
+            Log::info('Generating certificate for induction ID: ' . $induction->id);
 
-        $fileName = 'certificates/safety_induction_' . $induction->id . '_' . now()->format('YmdHis') . '.pdf';
-        Storage::disk('public')->put($fileName, $pdf->output());
+            // Ambil nama pengguna dan sederhanakan jika lebih dari 15 karakter
+            $fullName = $induction->user->name ?? 'Unknown';
+            $nameParts = explode(' ', trim($fullName));
+            $simplifiedName = $nameParts[0]; // Ambil kata pertama
+            if (count($nameParts) > 1) {
+                $simplifiedName .= ' ' . $nameParts[1]; // Tambahkan kata kedua
+            }
+            if (strlen($fullName) > 15 && count($nameParts) > 2) {
+                $initials = array_map(function ($part) {
+                    return strtoupper(substr(trim($part), 0, 1));
+                }, array_slice($nameParts, 2));
+                $simplifiedName .= ' ' . implode(' ', $initials);
+            }
 
-        return Storage::url($fileName);
+            // Tanggal penerbitan dan kadaluarsa
+            $issuedDate = now()->format('d M Y'); // 03 Jun 2025
+            $expiredDate = now()->addYear()->format('d M Y'); // 03 Jun 2026
+
+            // HTML untuk overlay teks di atas gambar
+            $html = <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        @page {
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+            background-image: url('storage/templates/safety_induction_certificate.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .text-overlay {
+            position: absolute;
+            text-align: center;
+            width: 100%;
+            color: #000;
+            font-family: 'Helvetica';
+        }
+        .name {
+            font-size: 30px;
+            margin-top: 300px; /* Nama di tengah vertikal */
+        }
+        .issued-date {
+            font-size: 18px;
+            margin-top: 380px; /* Tanggal penerbitan di bawah nama */
+        }
+        .expired-date {
+            font-size: 18px;
+            margin-top: 410px; /* Tanggal kadaluarsa di bawah tanggal penerbitan */
+        }
+    </style>
+</head>
+<body>
+    <div class="text-overlay">
+        <div class="name">$simplifiedName</div>
+        <div class="issued-date">Issued on: $issuedDate</div>
+        <div class="expired-date">Expires on: $expiredDate</div>
+    </div>
+</body>
+</html>
+HTML;
+
+            // Generate PDF dari HTML
+            $pdf = Pdf::loadHTML($html);
+
+            // Set ukuran kertas berdasarkan gambar (misalnya, A4)
+            $pdf->setPaper('a4', 'portrait');
+
+            // Simpan PDF ke storage
+            $fileName = 'certificates/safety_induction_' . $induction->id . '_' . now()->format('YmdHis') . '.pdf';
+            Storage::disk('public')->put($fileName, $pdf->output());
+
+            $url = Storage::url($fileName);
+            Log::info('Certificate generated successfully: ' . $url);
+
+            return $url;
+        } catch (\Exception $e) {
+            Log::error('Error generating certificate for induction ID: ' . $induction->id . ': ' . $e->getMessage());
+            throw new \Exception('Failed to generate certificate: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Generate a certificate based on name
+     *
+     * @OA\Post(
+     *     path="/api/generate-certificate",
+     *     operationId="generateCertificateByName",
+     *     tags={"Certificate"},
+     *     summary="Generate a safety certificate based on name",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string", description="Name to be printed on the certificate", example="Fahmi Wahyu Alifian")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Certificate generated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Certificate generated successfully"),
+     *             @OA\Property(property="certificate_url", type="string", example="http://example.com/certificates/certificate_1625149200.pdf")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid input",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Failed to generate certificate"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function generateCertificateByName(Request $request)
+    {
+        try {
+            // Validasi input
+            $request->validate([
+                'name' => 'required|string|max:255',
+            ]);
+
+            // Ambil nama dan sederhanakan jika lebih dari 15 karakter
+            $fullName = $request->input('name');
+            $nameParts = explode(' ', trim($fullName));
+            $simplifiedName = $nameParts[0]; // Ambil kata pertama
+            if (count($nameParts) > 1) {
+                $simplifiedName .= ' ' . $nameParts[1]; // Tambahkan kata kedua
+            }
+            if (strlen($fullName) > 15 && count($nameParts) > 2) {
+                $initials = array_map(function ($part) {
+                    return strtoupper(substr(trim($part), 0, 1));
+                }, array_slice($nameParts, 2));
+                $simplifiedName .= ' ' . implode(' ', $initials);
+            }
+
+            // Tanggal penerbitan dan kadaluarsa
+            $issuedDate = now()->format('d M Y'); // 03 Jun 2025
+            $expiredDate = now()->addYear()->format('d M Y'); // 03 Jun 2026
+
+            // HTML untuk overlay teks di atas gambar
+            $html = <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        @page {
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+            background-image: url('storage/templates/safety_induction_certificate.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .text-overlay {
+            position: absolute;
+            text-align: center;
+            width: 100%;
+            color: #000;
+            font-family: 'Helvetica';
+        }
+        .name {
+            font-size: 58px;
+            font-weight: bold;
+            margin-top: 528px; /* Nama di tengah vertikal */
+        }
+        .issued-date {
+            font-size: 24px;
+            margin-top: 198px; /* Tanggal penerbitan di bawah nama */
+        }
+        .expired-date {
+            font-size: 24px;
+            margin-top: 88px; /* Tanggal kadaluarsa di bawah tanggal penerbitan */
+        }
+    </style>
+</head>
+<body>
+    <div class="text-overlay">
+        <div class="name">$simplifiedName</div>
+        <div class="issued-date">$issuedDate</div>
+        <div class="expired-date">$expiredDate</div>
+    </div>
+</body>
+</html>
+HTML;
+
+            // Generate PDF dari HTML
+            $pdf = Pdf::loadHTML($html);
+            $pdf->setPaper('a4', 'portrait');
+
+            // Simpan PDF ke storage
+            $fileName = 'certificates/custom_certificate_' . now()->format('YmdHis') . '.pdf';
+            Storage::disk('public')->put($fileName, $pdf->output());
+
+            $url = Storage::url($fileName);
+            Log::info('Custom certificate generated successfully: ' . $url);
+
+            return response()->json([
+                'message' => 'Certificate generated successfully',
+                'certificate_url' => $url,
+            ]);
+        } catch (ValidationException $e) {
+            Log::error('Validation error for custom certificate: ' . json_encode($e->errors()));
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 400);
+        } catch (\Exception $e) {
+            Log::error('Error generating custom certificate: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to generate certificate',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

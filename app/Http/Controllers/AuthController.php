@@ -77,6 +77,77 @@ class AuthController extends Controller
         ], 201);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/guest-login",
+     *     tags={"Auth"},
+     *     summary="Login as guest using FCM token",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="fcm_token", type="string", example="sample_fcm_token_123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Guest login successful",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Guest login successful"),
+     *             @OA\Property(property="user", type="object"),
+     *             @OA\Property(property="token", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Validasi gagal"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
+     * )
+     */
+    public function guestLogin(Request $request)
+    {
+        $request->validate([
+            'fcm_token' => 'required|string',
+        ]);
+
+        $email = $request->fcm_token . '@mail.com';
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            // User exists, attempt login
+            if (!Auth::attempt(['email' => $email, 'password' => $request->fcm_token])) {
+                return response()->json(['message' => 'Invalid credentials'], 401);
+            }
+        } else {
+            // Register new guest user
+            $user = User::create([
+                'name' => 'Guest_' . substr($request->fcm_token, 0, 8),
+                'email' => $email,
+                'password' => Hash::make($request->fcm_token),
+                'role' => 'non_user',
+                'fcm_token' => $request->fcm_token,
+            ]);
+        }
+
+        // Update FCM token for the user
+        User::where('fcm_token', $request->fcm_token)
+            ->where('id', '!=', $user->id)
+            ->update(['fcm_token' => null]);
+
+        $user->update(['fcm_token' => $request->fcm_token]);
+
+        $token = $user->createToken('auth_token', ['*'], now()->addDays(7))->plainTextToken;
+
+        return response()->json([
+            'message' => 'Guest login successful',
+            'token' => $token,
+            'user' => $user
+        ], 200);
+    }
+
 
     /**
      * @OA\Get(

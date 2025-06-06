@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+Route::post('guest-login', [AuthController::class, 'guestLogin']);
+
+Route::post('generate-certificate', [SafetyInductionController::class, 'generateCertificateByName']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [AuthController::class, 'getUserByToken']);
@@ -60,12 +63,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::name('safety-inductions.')->prefix('safety-inductions')->group(function () {
         Route::get('/locations', [SafetyInductionController::class, 'getLocations']);
         Route::post('/', [SafetyInductionController::class, 'store']);
-        Route::get('/{id}/fail', [SafetyInductionController::class, 'markAsFailed']);
+        Route::post('/{id}/fail', [SafetyInductionController::class, 'markAsFailed']);
         Route::get('/{id}/questions', [SafetyInductionController::class, 'getQuestions']);
         Route::post('/{id}/submit-answers', [SafetyInductionController::class, 'submitAnswers']);
         Route::get('/{id}/result', [SafetyInductionController::class, 'getResult']);
         Route::get('/{id}/certificate', [SafetyInductionController::class, 'getCertificate']);
         Route::get('/my-submissions', [SafetyInductionController::class, 'mySubmissions']);
+        Route::post('/generate-certificate', [SafetyInductionController::class, 'generateCertificateByName']);
     });
 
     Route::prefix('users')->group(function () {

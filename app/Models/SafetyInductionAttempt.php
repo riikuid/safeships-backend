@@ -15,6 +15,7 @@ class SafetyInductionAttempt extends Model
     ];
 
     protected $casts = [
+        'safety_induction_id' => 'integer',
         'score' => 'integer',
         'passed' => 'boolean',
         'attempt_date' => 'date',

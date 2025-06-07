@@ -17,7 +17,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * @OA\Schema(
@@ -129,6 +131,169 @@ class SafetyInductionController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get list of Safety Inductions for card display
+     *
+     * @OA\Get(
+     *     path="/api/safety-inductions",
+     *     operationId="getSafetyInductionsList",
+     *     tags={"Safety Induction"},
+     *     summary="Get list of Safety Inductions for card display",
+     *     security={{"sanctum": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Safety Inductions retrieved successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="user_id", type="integer", example=5),
+     *                     @OA\Property(property="name", type="string", example="Nama Ku"),
+     *                     @OA\Property(property="type", type="string", example="karyawan"),
+     *                     @OA\Property(property="phone_number", type="string", example="092321321"),
+     *                     @OA\Property(property="email", type="string", example="fahmi@exmol.com")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Failed to retrieve Safety Inductions"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function index()
+    {
+        try {
+            $inductions = SafetyInduction::select([
+                'id',
+                'user_id',
+                'name',
+                'type',
+                'phone_number',
+                'email',
+                'status',
+                'created_at',
+            ])->orderBy('created_at', 'desc')->get();
+
+            return response()->json([
+                'message' => 'Safety Inductions retrieved successfully',
+                'data' => $inductions,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving Safety Inductions: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to retrieve Safety Inductions',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Show details of a specific Safety Induction
+     *
+     * @OA\Get(
+     *     path="/api/safety-inductions/{id}",
+     *     operationId="showSafetyInduction",
+     *     tags={"Safety Induction"},
+     *     summary="Show details of a specific Safety Induction",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the Safety Induction",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Safety Induction retrieved successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=7),
+     *                 @OA\Property(property="user_id", type="integer", example=5),
+     *                 @OA\Property(property="name", type="string", example="Nama Ku"),
+     *                 @OA\Property(property="type", type="string", example="karyawan"),
+     *                 @OA\Property(property="address", type="string", example="Kodejidji e"),
+     *                 @OA\Property(property="phone_number", type="string", example="092321321"),
+     *                 @OA\Property(property="email", type="string", example="fahmi@exmol.com"),
+     *                 @OA\Property(property="status", type="string", example="pending"),
+     *                 @OA\Property(property="created_at", type="string", example="2025-06-05T08:43:47.000000Z"),
+     *                 @OA\Property(property="updated_at", type="string", example="2025-06-05T08:43:47.000000Z"),
+     *                 @OA\Property(
+     *                     property="attempts",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         @OA\Property(property="id", type="integer", example=7),
+     *                         @OA\Property(property="safety_induction_id", type="integer", example=7),
+     *                         @OA\Property(property="question_package_id", type="integer", example=2),
+     *                         @OA\Property(property="score", type="integer", example=0),
+     *                         @OA\Property(property="passed", type="boolean", example=false),
+     *                         @OA\Property(property="attempt_date", type="string", example="2025-06-05T00:00:00.000000Z"),
+     *                         @OA\Property(property="created_at", type="string", example="2025-06-05T08:44:03.000000Z"),
+     *                         @OA\Property(property="updated_at", type="string", example="2025-06-05T08:44:03.000000Z")
+     *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="certificate",
+     *                     type="object",
+     *                     nullable=true,
+     *                     @OA\Property(property="url", type="string", example="/storage/certificates/safety_induction_7_20250605120000.pdf")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Safety Induction not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Safety Induction not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Failed to retrieve Safety Induction"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function show($id)
+    {
+        try {
+            $induction = SafetyInduction::with(['attempts', 'certificate'])->findOrFail($id);
+
+            return response()->json([
+                'message' => 'Safety Induction retrieved successfully',
+                'data' => $induction,
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Safety Induction not found',
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving Safety Induction ID ' . $id . ': ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to retrieve Safety Induction',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
 
     /**
      * Create a new safety induction request
@@ -899,7 +1064,7 @@ class SafetyInductionController extends Controller
             Log::info('Generating certificate for induction ID: ' . $induction->id);
 
             // Ambil nama pengguna dan sederhanakan jika lebih dari 15 karakter
-            $fullName = $induction->user->name ?? 'Unknown';
+            $fullName = $induction->name ?? 'Unknown';
             $nameParts = explode(' ', trim($fullName));
             $simplifiedName = $nameParts[0]; // Ambil kata pertama
             if (count($nameParts) > 1) {
@@ -932,7 +1097,7 @@ class SafetyInductionController extends Controller
             align-items: center;
             height: 100vh;
             width: 100%;
-            background-image: url('storage/templates/safety_induction_certificate.png');
+            background-image: url('templates/safety_induction_certificate.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -1073,7 +1238,7 @@ HTML;
             align-items: center;
             height: 100vh;
             width: 100%;
-            background-image: url('storage/templates/safety_induction_certificate.png');
+            background-image: url('templates/safety_induction_certificate.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -1135,6 +1300,194 @@ HTML;
             Log::error('Error generating custom certificate: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to generate certificate',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/safety-inductions/report-data",
+     *     summary="Get Safety Induction report data for charts",
+     *     tags={"Safety Induction"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="year",
+     *         in="query",
+     *         description="Optional year to get monthly data (e.g., 2025). If not provided, returns yearly data for the previous 5 years.",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Data laporan berhasil diambil"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="labels",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="2025")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="datasets",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="object",
+     *                         @OA\Property(property="label", type="string", example="Total Pengajuan"),
+     *                         @OA\Property(property="data", type="array", @OA\Items(type="integer", example=10)),
+     *                         @OA\Property(property="backgroundColor", type="string", example="#4BC0C0")
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid year parameter",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Tahun tidak valid")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil data laporan"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function reportData(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            $year = $request->query('year');
+
+            Log::info('reportData called', [
+                'user_id' => $user->id,
+                'year' => $year,
+            ]);
+
+            // Validate year if provided
+            if ($year !== null) {
+                $validator = Validator::make(['year' => $year], [
+                    'year' => 'integer|min:2000|max:9999',
+                ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => 'Tahun tidak valid',
+                        'errors' => $validator->errors(),
+                    ], 400);
+                }
+            }
+
+            $query = SafetyInduction::query();
+
+            if ($year) {
+                // Monthly data for the specified year
+                $data = $query->select(
+                    DB::raw('MONTH(created_at) as month'),
+                    DB::raw('COUNT(*) as total')
+                )
+                    ->whereYear('created_at', $year)
+                    ->groupBy(DB::raw('MONTH(created_at)'))
+                    ->orderBy('month')
+                    ->get();
+
+                Log::info('Monthly report data', [
+                    'year' => $year,
+                    'data' => $data->toArray(),
+                ]);
+
+                $labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                $totalData = array_fill(0, 12, 0);
+
+                foreach ($data as $row) {
+                    $monthIndex = $row->month - 1;
+                    $totalData[$monthIndex] = (int) ($row->total ?? 0);
+                }
+
+                $responseData = [
+                    'labels' => $labels,
+                    'datasets' => [
+                        [
+                            'label' => 'Total Pengajuan',
+                            'data' => $totalData,
+                            'backgroundColor' => '#4BC0C0', // Warna untuk Total Pengajuan
+                        ],
+                    ],
+                ];
+            } else {
+                // Yearly data for the previous 5 years
+                $currentYear = now()->year; // 2025
+                $startYear = $currentYear - 4; // 2021
+                $data = $query->select(
+                    DB::raw('YEAR(created_at) as year'),
+                    DB::raw('COUNT(*) as total')
+                )
+                    ->whereBetween(DB::raw('YEAR(created_at)'), [$startYear, $currentYear])
+                    ->groupBy(DB::raw('YEAR(created_at)'))
+                    ->orderBy('year')
+                    ->get();
+
+                Log::info('Yearly report data', [
+                    'startYear' => $startYear,
+                    'currentYear' => $currentYear,
+                    'data' => $data->toArray(),
+                ]);
+
+                $labels = range($startYear, $currentYear);
+                $labels = array_map('strval', $labels);
+                $totalData = array_fill(0, 5, 0);
+
+                if ($data->isEmpty()) {
+                    return response()->json([
+                        'message' => 'Tidak ada data yang dilaporkan pada periode tersebut',
+                        'data' => [
+                            'labels' => array_map('strval', range($startYear, $currentYear)),
+                            'datasets' => [
+                                [
+                                    'label' => 'Total Pengajuan',
+                                    'data' => array_fill(0, 5, 0),
+                                    'backgroundColor' => '#4BC0C0',
+                                ],
+                            ],
+                        ],
+                    ]);
+                }
+
+                foreach ($data as $row) {
+                    $yearIndex = $row->year - $startYear;
+                    if ($yearIndex >= 0 && $yearIndex < 5) {
+                        $totalData[$yearIndex] = (int) ($row->total ?? 0);
+                    }
+                }
+
+                $responseData = [
+                    'labels' => $labels,
+                    'datasets' => [
+                        [
+                            'label' => 'Total Pengajuan',
+                            'data' => $totalData,
+                            'backgroundColor' => '#4BC0C0',
+                        ],
+                    ],
+                ];
+            }
+
+            return response()->json([
+                'message' => 'Data laporan berhasil diambil',
+                'data' => $responseData,
+            ]);
+        } catch (Exception $e) {
+            Log::error('reportData error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'message' => 'Gagal mengambil data laporan',
                 'error' => $e->getMessage(),
             ], 500);
         }

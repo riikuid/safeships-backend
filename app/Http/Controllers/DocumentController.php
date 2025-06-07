@@ -1276,7 +1276,7 @@ class DocumentController extends Controller
             $user = Auth::user();
 
             // Hanya super_admin yang dapat menghapus
-            if ($user->role !== 'super_admin') {
+            if (!in_array($user->role, ['super_admin', 'admin'])) {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 

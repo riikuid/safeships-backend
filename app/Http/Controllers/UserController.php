@@ -70,7 +70,7 @@ class UserController extends Controller
     {
         try {
             $user = Auth::user();
-            if ($user->role == 'user' ) {
+            if ($user->role == 'user') {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 
@@ -246,7 +246,7 @@ class UserController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8',
-                'role' => 'required|in:super_admin,manager,user,non_user',
+                'role' => 'required|in:super_admin,manager,admin,user,non_user',
             ]);
 
             $newUser = User::create([
@@ -355,7 +355,7 @@ class UserController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email,' . $id,
-                'role' => 'required|in:super_admin,manager,user,non_user',
+                'role' => 'required|in:super_admin,admin,manager,user,non_user',
             ]);
 
             $updateData = [

@@ -2189,6 +2189,88 @@
             }
         },
         "/api/safety-inductions": {
+            "get": {
+                "tags": [
+                    "Safety Induction"
+                ],
+                "summary": "Get list of Safety Inductions for card display",
+                "description": "Get list of Safety Inductions for card display",
+                "operationId": "getSafetyInductionsList",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Safety Inductions retrieved successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": 5
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Nama Ku"
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "example": "karyawan"
+                                                    },
+                                                    "phone_number": {
+                                                        "type": "string",
+                                                        "example": "092321321"
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "example": "fahmi@exmol.com"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to retrieve Safety Inductions"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
             "post": {
                 "tags": [
                     "Safety Induction"
@@ -2331,6 +2413,180 @@
                 "security": [
                     {
                         "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/safety-inductions/{id}": {
+            "get": {
+                "tags": [
+                    "Safety Induction"
+                ],
+                "summary": "Show details of a specific Safety Induction",
+                "description": "Show details of a specific Safety Induction",
+                "operationId": "showSafetyInduction",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the Safety Induction",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Safety Induction retrieved successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 7
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Nama Ku"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "karyawan"
+                                                },
+                                                "address": {
+                                                    "type": "string",
+                                                    "example": "Kodejidji e"
+                                                },
+                                                "phone_number": {
+                                                    "type": "string",
+                                                    "example": "092321321"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "fahmi@exmol.com"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "pending"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "example": "2025-06-05T08:43:47.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "example": "2025-06-05T08:43:47.000000Z"
+                                                },
+                                                "attempts": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 7
+                                                            },
+                                                            "safety_induction_id": {
+                                                                "type": "integer",
+                                                                "example": 7
+                                                            },
+                                                            "question_package_id": {
+                                                                "type": "integer",
+                                                                "example": 2
+                                                            },
+                                                            "score": {
+                                                                "type": "integer",
+                                                                "example": 0
+                                                            },
+                                                            "passed": {
+                                                                "type": "boolean",
+                                                                "example": false
+                                                            },
+                                                            "attempt_date": {
+                                                                "type": "string",
+                                                                "example": "2025-06-05T00:00:00.000000Z"
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "example": "2025-06-05T08:44:03.000000Z"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "example": "2025-06-05T08:44:03.000000Z"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "certificate": {
+                                                    "properties": {
+                                                        "url": {
+                                                            "type": "string",
+                                                            "example": "/storage/certificates/safety_induction_7_20250605120000.pdf"
+                                                        }
+                                                    },
+                                                    "type": "object",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Safety Induction not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Safety Induction not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to retrieve Safety Induction"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -3095,6 +3351,119 @@
                 "security": [
                     {
                         "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/safety-inductions/report-data": {
+            "get": {
+                "tags": [
+                    "Safety Induction"
+                ],
+                "summary": "Get Safety Induction report data for charts",
+                "operationId": "8080006e1fd4afe6f47e97dbd2d2aff1",
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "description": "Optional year to get monthly data (e.g., 2025). If not provided, returns yearly data for the previous 5 years.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data laporan berhasil diambil"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "labels": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "2025"
+                                                    }
+                                                },
+                                                "datasets": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "label": {
+                                                                "type": "string",
+                                                                "example": "Total Pengajuan"
+                                                            },
+                                                            "data": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "integer",
+                                                                    "example": 10
+                                                                }
+                                                            },
+                                                            "backgroundColor": {
+                                                                "type": "string",
+                                                                "example": "#4BC0C0"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Tahun tidak valid"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Gagal mengambil data laporan"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
                     }
                 ]
             }

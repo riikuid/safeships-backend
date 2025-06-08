@@ -11,6 +11,7 @@ use App\Models\QuestionPackage;
 use App\Models\SafetyInduction;
 use App\Models\SafetyInductionAttempt;
 use App\Helpers\FcmHelper;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -394,6 +395,29 @@ class SafetyInductionController extends Controller
                 'email' => $request->email,
                 'status' => 'pending',
             ]);
+
+            $superAdmins = User::where('role', 'super_admin')->get();
+            foreach ($superAdmins as $admin) {
+
+
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'title' => 'Terdapat Pengajuan Safety Induction Baru',
+                    'message' => "'{$request->name}' mengajukan safety induction bary ",
+                    'reference_type' => 'safety_induction_view',
+                    'reference_id' => $induction->id,
+                ]);
+
+                FcmHelper::send(
+                    $admin->fcm_token,
+                    'Terdapat Pengajuan Safety Induction Baru',
+                    "'{$request->name}' mengajukan safety induction bary ",
+                    [
+                        'reference_type' => 'safety_induction_view',
+                        'reference_id' => (string) $induction->id,
+                    ]
+                );
+            }
 
             // Notification::create([
             //     'user_id' => $user->id,

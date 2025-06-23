@@ -403,7 +403,7 @@ class SafetyInductionController extends Controller
                 Notification::create([
                     'user_id' => $admin->id,
                     'title' => 'Terdapat Pengajuan Safety Induction Baru',
-                    'message' => "'{$request->name}' mengajukan safety induction bary ",
+                    'message' => "'{$request->name}' mengajukan safety induction baru ",
                     'reference_type' => 'safety_induction_view',
                     'reference_id' => $induction->id,
                 ]);
@@ -411,7 +411,7 @@ class SafetyInductionController extends Controller
                 FcmHelper::send(
                     $admin->fcm_token,
                     'Terdapat Pengajuan Safety Induction Baru',
-                    "'{$request->name}' mengajukan safety induction bary ",
+                    "'{$request->name}' mengajukan safety induction baru",
                     [
                         'reference_type' => 'safety_induction_view',
                         'reference_id' => (string) $induction->id,

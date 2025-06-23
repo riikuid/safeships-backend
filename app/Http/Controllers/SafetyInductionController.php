@@ -117,10 +117,35 @@ class SafetyInductionController extends Controller
      *     )
      * )
      */
+    // public function getLocations()
+    // {
+    //     try {
+    //         $locations = Location::all(['id', 'name', 'youtube_url']);
+    //         return response()->json([
+    //             'message' => 'Daftar lokasi berhasil diambil',
+    //             'data' => $locations,
+    //         ]);
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'message' => 'Gagal mengambil daftar lokasi',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
     public function getLocations()
     {
         try {
-            $locations = Location::all(['id', 'name', 'youtube_url']);
+            $locations = Location::all(['id', 'name', 'youtube_url'])->map(function ($location) {
+                // Ambil video ID dari URL YouTube
+                preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\&\?\/]+)/', $location->youtube_url, $matches);
+                $videoId = $matches[1] ?? null;
+
+                // Tambahkan thumbnail_url jika videoId valid
+                $location->thumbnail_url = $videoId ? "https://img.youtube.com/vi/{$videoId}/hqdefault.jpg" : null;
+
+                return $location;
+            });
+
             return response()->json([
                 'message' => 'Daftar lokasi berhasil diambil',
                 'data' => $locations,
@@ -132,6 +157,50 @@ class SafetyInductionController extends Controller
             ], 500);
         }
     }
+
+
+    /**
+     * Create new location
+     *
+     * @OA\Post(
+     *     path="/api/safety-inductions/locations",
+     *     summary="Create a new location",
+     *     tags={"Safety Induction"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "youtube_url"},
+     *             @OA\Property(property="name", type="string", example="Warehouse A"),
+     *             @OA\Property(property="youtube_url", type="string", example="https://youtube.com/watch?v=abc123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Location created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Lokasi berhasil ditambahkan"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Location")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Validation failed")
+     * )
+     */
+    public function storeLocation(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'youtube_url' => 'required|url',
+        ]);
+
+        $location = Location::create($validated);
+
+        return response()->json([
+            'message' => 'Lokasi berhasil ditambahkan',
+            'data' => $location,
+        ], 201);
+    }
+
 
     /**
      * Get list of Safety Inductions for card display

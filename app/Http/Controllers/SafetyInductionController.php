@@ -78,6 +78,18 @@ use Illuminate\Support\Facades\Validator;
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
+ *
+ * @OA\Schema(
+ *     schema="Location",
+ *     type="object",
+ *     title="Location",
+ *     required={"id", "name", "youtube_url"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Warehouse A"),
+ *     @OA\Property(property="youtube_url", type="string", example="https://youtu.be/abc123"),
+ *     @OA\Property(property="thumbnail_url", type="string", example="https://img.youtube.com/vi/abc123/hqdefault.jpg")
+ * )
+
  */
 
 class SafetyInductionController extends Controller

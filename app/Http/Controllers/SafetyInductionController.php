@@ -117,21 +117,6 @@ class SafetyInductionController extends Controller
      *     )
      * )
      */
-    // public function getLocations()
-    // {
-    //     try {
-    //         $locations = Location::all(['id', 'name', 'youtube_url']);
-    //         return response()->json([
-    //             'message' => 'Daftar lokasi berhasil diambil',
-    //             'data' => $locations,
-    //         ]);
-    //     } catch (Exception $e) {
-    //         return response()->json([
-    //             'message' => 'Gagal mengambil daftar lokasi',
-    //             'error' => $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
     public function getLocations()
     {
         try {

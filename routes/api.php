@@ -62,6 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::name('safety-inductions.')->prefix('safety-inductions')->group(function () {
         Route::get('/', [SafetyInductionController::class, 'index'])->name('index');
+        Route::post('/locations', [SafetyInductionController::class, 'storeLocation']);
         Route::get('/locations', [SafetyInductionController::class, 'getLocations']);
         Route::get('/report-data', [SafetyInductionController::class, 'reportData'])->name('report-data');
         Route::post('/', [SafetyInductionController::class, 'store']);

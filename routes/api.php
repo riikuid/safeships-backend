@@ -80,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [UserController::class, 'index'])->middleware('role:super_admin,manager');
         Route::put('/update-profile', [UserController::class, 'updateProfile']);
 
+        Route::get('/actors', [UserController::class, 'getActors']);
         Route::get('/managers', [UserController::class, 'getManagers']);
         Route::get('{id}', [UserController::class, 'show'])->middleware('role:super_admin');
         Route::post('/', [UserController::class, 'store'])->middleware('role:super_admin');

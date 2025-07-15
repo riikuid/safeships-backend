@@ -537,6 +537,67 @@ class UserController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/users/actors",
+     *     tags={"Users"},
+     *     summary="Get list of managers and admins",
+     *     description="Retrieve a list of users with the 'manager' or 'admin' role, returning only id, name, and email. Accessible to all authenticated users.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Managers and Admins retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Manager dan Admin berhasil diambil"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="name", type="string", example="John Doe"),
+     *                     @OA\Property(property="email", type="string", example="john@example.com")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil manager dan admin"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function getActors()
+    {
+        try {
+            $users = User::select('id', 'name', 'email')
+                ->whereIn('role', ['manager', 'admin'])
+                ->get();
+
+            return response()->json([
+                'message' => 'Manager dan Admin berhasil diambil',
+                'data' => $users,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengambil manager dan admin',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    /**
      * @OA\Put(
      *     path="/api/users/{id}/reset-password",
      *     tags={"Users"},

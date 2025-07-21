@@ -27,6 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // DOKUMENTASI K3
     Route::name('documents.')->prefix('documents')->group(function () {
         Route::get('/assessment-progress', [DocumentController::class, 'getAssessmentProgress']);
+        Route::get('/category-progress', [DocumentController::class, 'getCategoryProgress']);
         Route::get('/download-all', [DocumentController::class, 'downloadAllZip']);
         Route::delete('/delete-all', [DocumentController::class, 'deleteAll']);
         Route::post('/', [DocumentController::class, 'store']);

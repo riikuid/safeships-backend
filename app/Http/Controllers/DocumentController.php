@@ -1625,6 +1625,145 @@ class DocumentController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/documents/category-progress",
+     *     operationId="getCategoryProgress",
+     *     tags={"Documents"},
+     *     summary="Get category progress with hierarchy",
+     *     description="Returns the category hierarchy (Level 1 to Level 3) with completion progress for Level 1 and Level 2, and status (TERISI/BELUM) for Level 3 based on approved documents.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Category progress retrieved successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Progres kategori berhasil diambil"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="code", type="string", example="1"),
+     *                     @OA\Property(property="name", type="string", example="Pembangunan Dan Pemeliharaan"),
+     *                     @OA\Property(property="progress_percentage", type="number", format="float", example=89.0),
+     *                     @OA\Property(property="progress_fraction", type="string", example="8/9"),
+     *                     @OA\Property(
+     *                         property="children",
+     *                         type="array",
+     *                         @OA\Items(
+     *                             type="object",
+     *                             @OA\Property(property="id", type="integer", example=2),
+     *                             @OA\Property(property="code", type="string", example="1.1"),
+     *                             @OA\Property(property="name", type="string", example="Kebijakan K3"),
+     *                             @OA\Property(property="progress_percentage", type="number", format="float", example=60.0),
+     *                             @OA\Property(property="progress_fraction", type="string", example="3/5"),
+     *                             @OA\Property(
+     *                                 property="children",
+     *                                 type="array",
+     *                                 @OA\Items(
+     *                                     type="object",
+     *                                     @OA\Property(property="id", type="integer", example=3),
+     *                                     @OA\Property(property="code", type="string", example="1.1.1"),
+     *                                     @OA\Property(property="name", type="string", example="Sub Kebijakan K3 1"),
+     *                                     @OA\Property(property="status", type="string", example="TERISI")
+     *                                 )
+     *                             )
+     *                         )
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Gagal mengambil progres kategori"),
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    public function getCategoryProgress(Request $request)
+    {
+        try {
+
+
+            // Ambil semua kategori Level 1 dengan hierarki anak
+            $categories = Category::with(['children.children.documents' => function ($query) {
+                $query->where('status', 'approved')->whereNull('deleted_at');
+            }])
+                ->whereNull('parent_id')
+                ->get();
+
+            // Transformasi data untuk menyertakan progres
+            $data = $categories->map(function ($level1) {
+                // Hitung progres untuk Level 1
+                $level2Categories = $level1->children;
+                $totalLevel2 = $level2Categories->count();
+                $filledLevel2 = $level2Categories->filter(function ($level2) {
+                    return $level2->children->some(function ($level3) {
+                        return $level3->documents->isNotEmpty();
+                    });
+                })->count();
+                $level1Progress = $totalLevel2 > 0 ? ($filledLevel2 / $totalLevel2) * 100 : 0;
+
+                return [
+                    'id' => $level1->id,
+                    'code' => $level1->code,
+                    'name' => $level1->name,
+                    'progress_percentage' => round($level1Progress, 2),
+                    'progress_fraction' => "$filledLevel2/$totalLevel2",
+                    'children' => $level2Categories->map(function ($level2) {
+                        // Hitung progres untuk Level 2
+                        $level3Categories = $level2->children;
+                        $totalLevel3 = $level3Categories->count();
+                        $filledLevel3 = $level3Categories->filter(function ($level3) {
+                            return $level3->documents->isNotEmpty();
+                        })->count();
+                        $level2Progress = $totalLevel3 > 0 ? ($filledLevel3 / $totalLevel3) * 100 : 0;
+
+                        return [
+                            'id' => $level2->id,
+                            'code' => $level2->code,
+                            'name' => $level2->name,
+                            'progress_percentage' => round($level2Progress, 2),
+                            'progress_fraction' => "$filledLevel3/$totalLevel3",
+                            'children' => $level3Categories->map(function ($level3) {
+                                $isFilled = $level3->documents->isNotEmpty();
+                                return [
+                                    'id' => $level3->id,
+                                    'code' => $level3->code,
+                                    'name' => $level3->name,
+                                    'status' => $isFilled ? 'TERISI' : 'BELUM'
+                                ];
+                            })->toArray()
+                        ];
+                    })->toArray()
+                ];
+            })->toArray();
+
+            return response()->json([
+                'message' => 'Progres kategori berhasil diambil',
+                'data' => $data
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengambil progres kategori',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Download all approved documents as a ZIP file with category hierarchy.
      *
      * @OA\Get(
